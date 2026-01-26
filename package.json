@@ -1,0 +1,48 @@
+{
+  "name": "fluxmedia",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Switch providers, not code - A TypeScript-first media library for uploading to Cloudinary, S3, R2, and more",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fluxmediajs/fluxmedia.git"
+  },
+  "license": "MIT",
+  "author": "FluxMedia Contributors",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' run build",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "tsc --build",
+    "clean": "pnpm -r run clean && rm -rf node_modules",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "publish-packages": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
+    "@vitest/coverage-v8": "^1.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.2.4",
+    "tsdown": "^0.2.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2"
+  },
+  "packageManager": "pnpm@8.15.1",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

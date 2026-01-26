@@ -1,0 +1,57 @@
+{
+    "compilerOptions": {
+        // Language and Environment
+        "target": "ES2020",
+        "lib": [
+            "ES2020"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        // Emit
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "removeComments": false,
+        "importHelpers": true,
+        // Interop Constraints
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        // Type Checking - STRICT MODE
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        // Completeness
+        "skipLibCheck": true,
+        // Path Aliases
+        "baseUrl": ".",
+        "paths": {
+            "@fluxmedia/core": [
+                "./packages/core/src"
+            ],
+            "@fluxmedia/cloudinary": [
+                "./packages/cloudinary/src"
+            ],
+            "@fluxmedia/s3": [
+                "./packages/s3/src"
+            ],
+            "@fluxmedia/r2": [
+                "./packages/r2/src"
+            ],
+            "@fluxmedia/react": [
+                "./packages/react/src"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "build",
+        "coverage"
+    ]
+}

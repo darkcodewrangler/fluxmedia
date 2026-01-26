@@ -1,0 +1,59 @@
+{
+    "name": "@fluxmedia/core",
+    "version": "0.1.0-alpha.0",
+    "description": "Core types and abstractions for FluxMedia - provider-agnostic media upload library",
+    "keywords": [
+        "fluxmedia",
+        "media",
+        "upload",
+        "cloud",
+        "typescript"
+    ],
+    "homepage": "https://fluxmedia.dev",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fluxmediajs/fluxmedia.git",
+        "directory": "packages/core"
+    },
+    "license": "MIT",
+    "author": "FluxMedia Contributors",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rm -rf dist",
+        "dev": "tsdown --watch",
+        "test": "vitest",
+        "test:coverage": "vitest --coverage"
+    },
+    "devDependencies": {
+        "tsdown": "^0.2.1",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.2"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

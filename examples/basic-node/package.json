@@ -1,0 +1,17 @@
+{
+    "name": "basic-node-example",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "description": "Basic Node.js example for FluxMedia",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "node --watch index.js"
+    },
+    "dependencies": {
+        "@fluxmedia/core": "workspace:*",
+        "@fluxmedia/cloudinary": "workspace:*",
+        "cloudinary": "^2.0.0",
+        "dotenv": "^16.4.1"
+    }
+}

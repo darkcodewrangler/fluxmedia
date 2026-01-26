@@ -1,0 +1,67 @@
+{
+    "name": "@fluxmedia/cloudinary",
+    "version": "0.1.0-alpha.0",
+    "description": "Cloudinary provider for FluxMedia",
+    "keywords": [
+        "fluxmedia",
+        "cloudinary",
+        "media",
+        "upload",
+        "cloud",
+        "typescript"
+    ],
+    "homepage": "https://fluxmedia.dev",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fluxmediajs/fluxmedia.git",
+        "directory": "packages/cloudinary"
+    },
+    "license": "MIT",
+    "author": "FluxMedia Contributors",
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.ts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rm -rf dist",
+        "dev": "tsdown --watch",
+        "test": "vitest",
+        "test:coverage": "vitest --coverage"
+    },
+    "dependencies": {
+        "@fluxmedia/core": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.5",
+        "tsdown": "^0.2.1",
+        "typescript": "^5.3.3",
+        "vitest": "^1.2.2"
+    },
+    "peerDependencies": {
+        "cloudinary": "^2.0.0"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
