@@ -20,15 +20,15 @@ import { createPlugin } from '@fluxmedia/core';
 
 const loggerPlugin = createPlugin('logger', {
   beforeUpload: async (file, options) => {
-    console.log('📤 Uploading:', file);
+    console.log('Uploading:', file);
     return { file, options };
   },
   afterUpload: async (result) => {
-    console.log('✅ Uploaded:', result.url);
+    console.log('Uploaded:', result.url);
     return result;
   },
   onError: async (error, context) => {
-    console.error('❌ Failed:', error.message);
+    console.error('Failed:', error.message);
   },
 });
 ```

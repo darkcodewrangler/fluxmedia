@@ -6,12 +6,12 @@ A TypeScript-first media management library that provides a unified API for uplo
 
 ## Features
 
-- 🔄 **Switch providers with one line of code** - No vendor lock-in
-- 🎯 **Type-safe** - Full TypeScript support with intelligent autocomplete
-- ⚡ **Tree-shakeable** - Only bundle what you use
-- ⚛️ **React integration** - Hooks and components included
-- 🔌 **Extensible** - Access native provider APIs when needed
-- 📦 **Minimal bundle size** - Lazy loading and dynamic imports
+- **Switch providers with one line of code** - No vendor lock-in
+- **Type-safe** - Full TypeScript support with intelligent autocomplete
+- **Tree-shakeable** - Only bundle what you use
+- **React integration** - Hooks and components included
+- **Extensible** - Access native provider APIs when needed
+- **Minimal bundle size** - Lazy loading and dynamic imports
 
 ## Quick Start
 
@@ -130,11 +130,11 @@ function UploadButton() {
 
 | Feature               | Cloudinary | S3  | R2  |
 | --------------------- | ---------- | --- | --- |
-| Image Transformations | ✅          | ❌   | ❌   |
-| Video Processing      | ✅          | ❌   | ❌   |
-| AI Tagging            | ✅          | ❌   | ❌   |
-| Multipart Upload      | ✅          | ✅   | ✅   |
-| Direct Upload         | ✅          | ✅   | ✅   |
+| Image Transformations | Yes        | No  | No  |
+| Video Processing      | Yes        | No  | No  |
+| AI Tagging            | Yes        | No  | No  |
+| Multipart Upload      | Yes        | Yes | Yes |
+| Direct Upload         | Yes        | Yes | Yes |
 
 ## Development
 
@@ -162,4 +162,4 @@ MIT © FluxMedia Contributors
 
 ---
 
-**Built with ❤️ using TypeScript, pnpm, and tsdown**
+**Built with ❤️ using TypeScript**

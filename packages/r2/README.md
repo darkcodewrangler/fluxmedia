@@ -33,11 +33,11 @@ const result = await uploader.upload(file, {
 
 R2 is a storage-only provider (S3-compatible):
 
-- ✅ File upload/download
-- ✅ Multipart upload for large files
-- ✅ Zero egress fees
-- ❌ Image transformations (use Cloudflare Images)
-- ❌ Video processing
+- File upload/download
+- Multipart upload for large files
+- Zero egress fees
+- No image transformations (use Cloudflare Images)
+- No video processing
 
 ## Configuration
 

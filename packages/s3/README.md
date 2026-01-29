@@ -35,11 +35,11 @@ console.log(result.url);
 
 S3 is a storage-only provider:
 
-- ✅ File upload/download
-- ✅ Multipart upload for large files
-- ✅ Signed upload URLs
-- ❌ Image transformations (use CloudFront + Lambda@Edge)
-- ❌ Video processing
+- File upload/download
+- Multipart upload for large files
+- Signed upload URLs
+- No image transformations (use CloudFront + Lambda@Edge)
+- No video processing
 
 ## Configuration
 
