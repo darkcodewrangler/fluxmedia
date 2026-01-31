@@ -13,7 +13,9 @@ export default defineConfig({
                 'dist/',
                 '**/*.config.ts',
                 '**/__tests__/**',
+                "**/*.js",
                 'examples/',
+                'docs/',
             ],
             thresholds: {
                 lines: 80,
