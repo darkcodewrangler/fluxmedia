@@ -9,6 +9,7 @@ describe('R2Provider', () => {
             bucket: 'test-bucket',
             accessKeyId: 'test-key',
             secretAccessKey: 'test-secret',
+            publicUrl: 'https://test-bucket.r2.dev',
         });
     });
 });

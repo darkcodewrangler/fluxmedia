@@ -46,7 +46,8 @@
     "types": "./dist/index.d.ts",
     "files": [
         "dist",
-        "README.md"
+        "README.md",
+        "!dist/**/*.map"
     ],
     "scripts": {
         "build": "tsdown",

@@ -6,13 +6,31 @@ import type {
   ProviderFeatures,
 } from '@fluxmedia/core';
 import { MediaErrorCode, createMediaError } from '@fluxmedia/core';
+import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
 import { S3Features } from './features';
 import type { S3Config } from './types';
-import { S3Client } from '@aws-sdk/client-s3';
 
-// Type for S3 client
-interface S3ClientType {
-  send: (command: unknown) => Promise<unknown>;
+// Cached command imports for performance
+let cachedS3Client: typeof import('@aws-sdk/client-s3').S3Client | null = null;
+let cachedPutObjectCommand: typeof import('@aws-sdk/client-s3').PutObjectCommand | null = null;
+let cachedDeleteObjectCommand: typeof import('@aws-sdk/client-s3').DeleteObjectCommand | null =
+  null;
+let cachedHeadObjectCommand: typeof import('@aws-sdk/client-s3').HeadObjectCommand | null = null;
+
+async function getS3Imports() {
+  if (!cachedS3Client) {
+    const sdk = await import('@aws-sdk/client-s3');
+    cachedS3Client = sdk.S3Client;
+    cachedPutObjectCommand = sdk.PutObjectCommand;
+    cachedDeleteObjectCommand = sdk.DeleteObjectCommand;
+    cachedHeadObjectCommand = sdk.HeadObjectCommand;
+  }
+  return {
+    S3Client: cachedS3Client!,
+    PutObjectCommand: cachedPutObjectCommand!,
+    DeleteObjectCommand: cachedDeleteObjectCommand!,
+    HeadObjectCommand: cachedHeadObjectCommand!,
+  };
 }
 
 /**
@@ -23,40 +41,69 @@ export class S3Provider implements MediaProvider {
   readonly name: string = 's3';
   readonly features: ProviderFeatures = S3Features;
 
-  private client: S3ClientType | S3Client | null = null;
+  private client: S3ClientType | null = null;
+  private clientPromise: Promise<S3ClientType> | null = null;
   private config: S3Config;
 
   constructor(config: S3Config) {
+    // Validate required fields
+    const required: (keyof S3Config)[] = ['region', 'bucket', 'accessKeyId', 'secretAccessKey'];
+    const missing = required.filter((field) => !config[field]);
+
+    if (missing.length > 0) {
+      throw createMediaError(
+        MediaErrorCode.INVALID_CONFIG,
+        's3',
+        new Error(`Missing required S3 configuration: ${missing.join(', ')}`)
+      );
+    }
+
+    // Validate bucket name format
+    if (config.bucket.includes('/')) {
+      throw createMediaError(
+        MediaErrorCode.INVALID_CONFIG,
+        's3',
+        new Error('Bucket name cannot contain slashes')
+      );
+    }
+
     this.config = config;
   }
 
   /**
-   * Lazy-loads the AWS S3 SDK to minimize bundle size.
+   * Initializes the S3 client lazily with race condition protection.
    */
   private async ensureClient(): Promise<S3ClientType> {
-    if (!this.client) {
-      this.client = new S3Client({
+    if (!this.clientPromise) {
+      this.clientPromise = this.initializeClient();
+    }
+    return this.clientPromise;
+  }
+
+  private async initializeClient(): Promise<S3ClientType> {
+    const { S3Client } = await getS3Imports();
+    const client = new S3Client([
+      {
         region: this.config.region,
         credentials: {
           accessKeyId: this.config.accessKeyId,
-
           secretAccessKey: this.config.secretAccessKey,
         },
         endpoint: this.config.endpoint,
         forcePathStyle: this.config.forcePathStyle,
-      });
-    }
-    return this.client as S3ClientType;
+      },
+    ]);
+    this.client = client;
+    return client;
   }
 
   async upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult> {
     const client = await this.ensureClient();
+    const { PutObjectCommand } = await getS3Imports();
 
     try {
-      const { PutObjectCommand } = await import('@aws-sdk/client-s3');
-
       const key = this.generateKey(options);
-      const body = file instanceof Buffer ? file : await this.fileToBuffer(file);
+      const body = file instanceof Buffer ? file : await this.fileToBuffer(file as File);
 
       if (options?.onProgress) {
         options.onProgress(0);
@@ -67,6 +114,7 @@ export class S3Provider implements MediaProvider {
         Key: key,
         Body: body,
         ContentType: this.getContentType(file),
+        Metadata: options?.metadata as Record<string, string> | undefined,
       });
 
       await client.send(command);
@@ -75,18 +123,19 @@ export class S3Provider implements MediaProvider {
         options.onProgress(100);
       }
 
-      return this.createResult(key, body.length);
+      // Use byteLength for correct size calculation
+      const size = file instanceof Buffer ? file.byteLength : (file as File).size;
+      return this.createResult(key, size);
     } catch (error) {
-      throw createMediaError(MediaErrorCode.UPLOAD_FAILED, this.name, error);
+      throw this.mapS3Error(error, MediaErrorCode.UPLOAD_FAILED);
     }
   }
 
   async delete(id: string): Promise<void> {
     const client = await this.ensureClient();
+    const { DeleteObjectCommand } = await getS3Imports();
 
     try {
-      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
-
       const command = new DeleteObjectCommand({
         Bucket: this.config.bucket,
         Key: id,
@@ -94,26 +143,21 @@ export class S3Provider implements MediaProvider {
 
       await client.send(command);
     } catch (error) {
-      throw createMediaError(MediaErrorCode.DELETE_FAILED, this.name, error);
+      throw this.mapS3Error(error, MediaErrorCode.DELETE_FAILED);
     }
   }
 
   async get(id: string): Promise<UploadResult> {
     const client = await this.ensureClient();
+    const { HeadObjectCommand } = await getS3Imports();
 
     try {
-      const { HeadObjectCommand } = await import('@aws-sdk/client-s3');
-
       const command = new HeadObjectCommand({
         Bucket: this.config.bucket,
         Key: id,
       });
 
-      const response = (await client.send(command)) as {
-        ContentLength?: number;
-        ContentType?: string;
-        LastModified?: Date;
-      };
+      const response = await client.send(command);
 
       return {
         id,
@@ -128,7 +172,7 @@ export class S3Provider implements MediaProvider {
         createdAt: response.LastModified ?? new Date(),
       };
     } catch (error) {
-      throw createMediaError(MediaErrorCode.FILE_NOT_FOUND, this.name, error);
+      throw this.mapS3Error(error, MediaErrorCode.FILE_NOT_FOUND);
     }
   }
 
@@ -140,18 +184,73 @@ export class S3Provider implements MediaProvider {
     return `https://${this.config.bucket}.s3.${this.config.region}.amazonaws.com/${id}`;
   }
 
-  async uploadMultiple(files: File[] | Buffer[], options?: UploadOptions): Promise<UploadResult[]> {
-    const uploadPromises = files.map((file) => this.upload(file, options));
-    return Promise.all(uploadPromises);
+  async uploadMultiple(
+    files: File[] | Buffer[],
+    options?: UploadOptions & { concurrency?: number }
+  ): Promise<UploadResult[]> {
+    // Batched processing with concurrency control
+    const concurrency = options?.concurrency ?? 5;
+    const results: UploadResult[] = [];
+
+    for (let i = 0; i < files.length; i += concurrency) {
+      const batch = files.slice(i, i + concurrency);
+      const batchResults = await Promise.all(
+        batch.map((file) => {
+          // Clone options for each file to avoid shared state
+          const { concurrency: _, ...uploadOptions } = options ?? {};
+          return this.upload(
+            file,
+            Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined
+          );
+        })
+      );
+      results.push(...batchResults);
+    }
+
+    return results;
   }
 
   async deleteMultiple(ids: string[]): Promise<void> {
-    const deletePromises = ids.map((id) => this.delete(id));
-    await Promise.all(deletePromises);
+    // Batched processing with concurrency control
+    const concurrency = 10;
+    const failed: Array<{ id: string; error: unknown }> = [];
+
+    for (let i = 0; i < ids.length; i += concurrency) {
+      const batch = ids.slice(i, i + concurrency);
+      // Use Promise.allSettled for partial failure handling
+      const results = await Promise.allSettled(
+        batch.map((id) => this.delete(id).then(() => ({ id })))
+      );
+
+      results.forEach((result, index) => {
+        const id = batch[index]!;
+        if (result.status === 'rejected') {
+          failed.push({ id, error: result.reason });
+        }
+      });
+    }
+
+    if (failed.length > 0) {
+      throw createMediaError(
+        MediaErrorCode.DELETE_FAILED,
+        this.name,
+        new Error(
+          `Failed to delete ${failed.length} of ${ids.length} files: ${failed.map((f) => f.id).join(', ')}`
+        )
+      );
+    }
   }
 
   get native(): unknown {
     return this.client;
+  }
+
+  // Prevent credential exposure in serialization
+  toJSON() {
+    return {
+      name: this.name,
+      features: this.features,
+    };
   }
 
   private generateKey(options?: UploadOptions): string {
@@ -192,5 +291,34 @@ export class S3Provider implements MediaProvider {
       metadata: {},
       createdAt: new Date(),
     };
+  }
+
+  /**
+   * Maps S3-specific errors to MediaError with appropriate codes
+   */
+  private mapS3Error(error: unknown, defaultCode: MediaErrorCode): never {
+    const err = error as { name?: string; message?: string };
+
+    if (err.name === 'NoSuchBucket') {
+      throw createMediaError(
+        MediaErrorCode.INVALID_CONFIG,
+        this.name,
+        new Error(`Bucket '${this.config.bucket}' does not exist`)
+      );
+    }
+
+    if (err.name === 'AccessDenied' || err.name === 'InvalidAccessKeyId') {
+      throw createMediaError(
+        MediaErrorCode.UNAUTHORIZED,
+        this.name,
+        new Error('Access denied - check S3 credentials and bucket permissions')
+      );
+    }
+
+    if (err.name === 'NoSuchKey') {
+      throw createMediaError(MediaErrorCode.FILE_NOT_FOUND, this.name, error);
+    }
+
+    throw createMediaError(defaultCode, this.name, error);
   }
 }
