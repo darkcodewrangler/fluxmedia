@@ -1,12 +1,15 @@
 :root {
+  --primary: #0070f3;
   --background: #0a0a0a;
-  --foreground: #ededed;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --card: #1a1a1a;
+  --card-bg: #111;
+  --text: #ededed;
+  --text-secondary: #888;
   --border: #333;
-  --success: #22c55e;
+  --success: #10b981;
   --error: #ef4444;
+  --cloudinary: #3448c5;
+  --s3: #ff9900;
+  --r2: #f38020;
 }
 
 * {
@@ -15,37 +18,40 @@
   margin: 0;
 }
 
+html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--background);
-  color: var(--foreground);
+  max-width: 100vw;
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--background);
+  color: var(--text);
 }
 
 .container {
-  max-width: 800px;
+  max-width: 700px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 1rem;
 }
 
 h1 {
   font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--primary), #a855f7);
+  background: linear-gradient(to right, #fff, #888);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .subtitle {
-  color: #888;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 
 .card {
-  background: var(--card);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -54,41 +60,93 @@ h1 {
   margin-bottom: 1rem;
 }
 
-.upload-zone {
-  border: 2px dashed var(--border);
+/* Provider Tabs */
+.provider-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.provider-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 3rem 2rem;
-  text-align: center;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.provider-tab:hover {
+  border-color: var(--primary);
+}
+
+.provider-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.provider-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Mode Tabs */
+.mode-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.mode-tab:hover {
+  border-color: var(--primary);
+}
+
+.mode-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* Upload Zone */
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upload-button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.upload-zone:hover {
-  border-color: var(--primary);
-  background: rgba(59, 130, 246, 0.05);
-}
-
-.upload-zone.dragging {
-  border-color: var(--primary);
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.upload-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
 .upload-button:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: #005ad4;
+  transform: translateY(-1px);
 }
 
 .upload-button:disabled {
@@ -96,35 +154,22 @@ h1 {
   cursor: not-allowed;
 }
 
+/* Progress Bar */
 .progress-bar {
   width: 100%;
   height: 8px;
   background: var(--border);
   border-radius: 4px;
   overflow: hidden;
-  margin-top: 1rem;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), #a855f7);
-  transition: width 0.3s;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+  transition: width 0.2s ease;
 }
 
-.result {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid var(--success);
-  border-radius: 8px;
-}
-
-.result img {
-  max-width: 100%;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
+/* Error & Result */
 .error {
   margin-top: 1rem;
   padding: 1rem;
@@ -132,39 +177,65 @@ h1 {
   border: 1px solid var(--error);
   border-radius: 8px;
   color: var(--error);
+  font-size: 0.875rem;
+}
+
+.result {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--success);
+  border-radius: 8px;
+}
+
+.result strong {
+  color: var(--success);
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .url-display {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
   word-break: break-all;
-  font-family: monospace;
-  font-size: 0.875rem;
-  background: var(--background);
-  padding: 0.5rem;
-  border-radius: 4px;
-  margin-top: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.mode-tabs {
+.result img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Plugin List */
+.plugin-list {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.mode-tab {
-  padding: 0.5rem 1rem;
-  background: transparent;
+.plugin-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
   border: 1px solid var(--border);
-  color: var(--foreground);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.mode-tab.active {
-  background: var(--primary);
-  border-color: var(--primary);
+.plugin-item strong {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
 }
 
-.mode-tab:hover:not(.active) {
-  border-color: var(--primary);
+.plugin-item span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Code */
+pre {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  line-height: 1.6;
 }

@@ -1,45 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MediaUploader } from '@fluxmedia/core';
-import { CloudinaryProvider } from '@fluxmedia/cloudinary';
+import { createUploader, type ProviderType } from '@/lib/uploaders';
 
 /**
  * API route for proxy uploads.
- * The file is uploaded to the server first, then uploaded to Cloudinary.
+ * Supports multiple providers: cloudinary, s3, r2
  */
 export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
         const folder = formData.get('folder') as string | null;
+        const provider = (formData.get('provider') as ProviderType) || 'cloudinary';
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
-        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-        const apiKey = process.env.CLOUDINARY_API_KEY;
-        const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-        if (!cloudName || !apiKey || !apiSecret) {
-            return NextResponse.json(
-                { error: 'Cloudinary credentials not configured' },
-                { status: 500 }
-            );
-        }
-
-        // Create uploader with Cloudinary provider
-        const uploader = new MediaUploader(
-            new CloudinaryProvider({
-                cloudName,
-                apiKey,
-                apiSecret,
-            })
-        );
+        // Create uploader for the specified provider (with plugins enabled)
+        const uploader = await createUploader(provider, true);
 
         // Convert File to Buffer
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        // Upload to Cloudinary
+        // Upload with plugins (logger will log, metadata will be enriched)
         const result = await uploader.upload(buffer, {
             folder: folder ?? undefined,
             filename: file.name.replace(/\.[^/.]+$/, ''),
@@ -49,7 +32,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json(
-            { error: 'Upload failed' },
+            { error: error instanceof Error ? error.message : 'Upload failed' },
             { status: 500 }
         );
     }

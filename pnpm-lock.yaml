@@ -72,14 +72,26 @@ importers:
 
   examples/basic-node:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.980.0
+        version: 3.980.0
+      '@aws-sdk/lib-storage':
+        specifier: ^3.980.0
+        version: 3.980.0(@aws-sdk/client-s3@3.980.0)
       '@fluxmedia/cloudinary':
         specifier: workspace:*
         version: link:../../packages/cloudinary
       '@fluxmedia/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@fluxmedia/r2':
+        specifier: workspace:*
+        version: link:../../packages/r2
+      '@fluxmedia/s3':
+        specifier: workspace:*
+        version: link:../../packages/s3
       cloudinary:
-        specifier: ^2.0.0
+        specifier: ^2.9.0
         version: 2.9.0
       dotenv:
         specifier: ^16.4.1
@@ -102,11 +114,17 @@ importers:
       '@fluxmedia/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@fluxmedia/r2':
+        specifier: workspace:*
+        version: link:../../packages/r2
       '@fluxmedia/react':
         specifier: workspace:*
         version: link:../../packages/react
+      '@fluxmedia/s3':
+        specifier: workspace:*
+        version: link:../../packages/s3
       cloudinary:
-        specifier: ^2.0.0
+        specifier: ^2.9.0
         version: 2.9.0
       next:
         specifier: ^15.1.0
@@ -137,7 +155,7 @@ importers:
         specifier: workspace:*
         version: link:../core
       cloudinary:
-        specifier: ^2.0.0
+        specifier: ^2.9.0
         version: 2.9.0
     devDependencies:
       '@types/node':

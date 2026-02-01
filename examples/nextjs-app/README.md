@@ -1,75 +1,97 @@
-# Next.js Example
+# FluxMedia Next.js Example
 
-This example demonstrates how to use FluxMedia with Next.js App Router.
+Demonstrates using FluxMedia with React hooks, multiple providers, and the plugin system.
 
 ## Features
 
-- ✅ Signed URL uploads (recommended)
-- ✅ Proxy uploads through server
-- ✅ Progress tracking
-- ✅ Error handling
-- ✅ Modern UI with dark theme
+- **Multiple Providers**: Cloudinary, AWS S3, Cloudflare R2
+- **React Hooks**: `useMediaUpload` for easy client-side uploads
+- **Upload Modes**: Signed URL (direct to provider) or Proxy (through server)
+- **Plugin System**: Logger, Metadata enrichment, Validation plugins
 
 ## Setup
 
-1. Install dependencies (from root):
 ```bash
+# Install dependencies
 pnpm install
+
+# Copy environment template
+cp .env.example .env
+
+# Add your credentials to .env
 ```
 
-2. Build packages:
-```bash
-pnpm build
-```
+## Run
 
-3. Configure environment:
-```bash
-cd examples/nextjs-app
-cp .env.example .env.local
-# Edit .env.local with your Cloudinary credentials
-```
-
-4. Run the example:
 ```bash
 pnpm dev
 ```
 
-5. Open http://localhost:3000
+Open [http://localhost:3000](http://localhost:3000)
 
-## Upload Modes
+## Architecture
 
-### Signed URL (Recommended)
+### Client-Side (React Hooks)
 
-1. Browser requests signed upload parameters from `/api/upload/sign`
-2. Server generates signature using API secret (never exposed to client)
-3. Browser uploads directly to Cloudinary with signed params
+```tsx
+import { useMediaUpload } from '@fluxmedia/react';
 
-```typescript
-const { upload } = useMediaUpload({
-  mode: 'signed',
-  signUrlEndpoint: '/api/upload/sign'
-});
+export default function UploadComponent() {
+    const { upload, uploading, progress, result } = useMediaUpload({
+        mode: 'proxy',
+        proxyEndpoint: '/api/upload',
+    });
+
+    return (
+        <input 
+            type="file" 
+            onChange={(e) => upload(e.target.files[0])} 
+        />
+    );
+}
 ```
 
-### Proxy
-
-1. Browser uploads file to `/api/upload`
-2. Server uploads file to Cloudinary using FluxMedia
-3. Server returns result to browser
+### Server-Side (with Plugins)
 
 ```typescript
-const { upload } = useMediaUpload({
-  mode: 'proxy',
-  proxyEndpoint: '/api/upload'
+// lib/uploaders.ts
+import { MediaUploader, createPlugin } from '@fluxmedia/core';
+import { CloudinaryProvider } from '@fluxmedia/cloudinary';
+
+const loggerPlugin = createPlugin('logger', {
+    beforeUpload: async (file, options) => {
+        console.log('Starting upload...');
+        return { file, options };
+    },
+    afterUpload: async (result) => {
+        console.log('Upload complete:', result.url);
+        return result;
+    },
 });
+
+export async function createUploader() {
+    const uploader = new MediaUploader(
+        new CloudinaryProvider({ ... })
+    );
+    await uploader.use(loggerPlugin);
+    return uploader;
+}
 ```
 
-## API Routes
+### API Routes
 
-- `POST /api/upload/sign` - Generate signed upload parameters
-- `POST /api/upload` - Proxy upload through server
+- `POST /api/upload` - Proxy upload (file goes through server)
+- `POST /api/upload/sign` - Get signed Cloudinary URL
+- `POST /api/media/sign` - Get signed S3/R2 URL
 
-## Learn More
+## Plugins Included
 
-- [FluxMedia Documentation](../../packages/core/README.md)
-- [React Package](../../packages/react/README.md)
+| Plugin     | Description                            |
+| ---------- | -------------------------------------- |
+| Logger     | Logs all upload/delete operations      |
+| Metadata   | Adds uploadedAt timestamp to all files |
+| Validation | Validates file size (max 50MB)         |
+
+## Environment Variables
+
+See `.env.example` for all required credentials.

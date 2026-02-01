@@ -1,70 +1,98 @@
-# Basic Node.js Example
+# FluxMedia Basic Node.js Example
 
-This example demonstrates how to use FluxMedia with Cloudinary in a Node.js application.
+Demonstrates using FluxMedia with all available providers and the plugin system.
+
+## Providers Included
+
+- **Cloudinary** - Best for image/video transformations
+- **AWS S3** - Standard cloud storage
+- **Cloudflare R2** - S3-compatible with no egress fees
 
 ## Setup
 
-1. Install dependencies (from the repository root):
 ```bash
+# Install dependencies
 pnpm install
-```
 
-2. Build the packages:
-```bash
-pnpm build
-```
-
-3. Create a `.env` file with your Cloudinary credentials:
-```bash
+# Copy environment template
 cp .env.example .env
-# Edit .env and add your credentials
+
+# Add your credentials to .env
 ```
 
-4. Run the example:
+## Run
+
 ```bash
-cd examples/basic-node
 pnpm start
 ```
 
-## What This Example Shows
+## Features Demonstrated
 
-- ✅ Creating a MediaUploader with CloudinaryProvider
-- ✅ Uploading files with options
-- ✅ Uploading with transformations
-- ✅ Generating transformed URLs
-- ✅ Deleting files
-- ✅ Batch operations
-- ✅ Feature detection with `supports()`
-
-## Code Structure
+### 1. Multiple Providers
 
 ```javascript
 import { MediaUploader } from '@fluxmedia/core';
 import { CloudinaryProvider } from '@fluxmedia/cloudinary';
+import { S3Provider } from '@fluxmedia/s3';
+import { R2Provider } from '@fluxmedia/r2';
 
+// Choose your provider
 const uploader = new MediaUploader(
-  new CloudinaryProvider({
-    cloudName: 'your-cloud',
-    apiKey: 'your-key',
-    apiSecret: 'your-secret'
-  })
+    new CloudinaryProvider({ ... })
 );
-
-// Upload
-const result = await uploader.upload(file, {
-  folder: 'uploads',
-  transformation: {
-    width: 800,
-    format: 'webp'
-  }
-});
-
-// Delete
-await uploader.delete(result.id);
 ```
 
-## Next Steps
+### 2. Plugin System
 
-- Check out the [Next.js example](../nextjs-app) for React integration
-- See [Provider Switching](../provider-switching) to switch from Cloudinary to S3
-- Read the [documentation](../../packages/core/README.md) for full API reference
+```javascript
+import { createPlugin } from '@fluxmedia/core';
+
+// Create a logger plugin
+const loggerPlugin = createPlugin('logger', {
+    beforeUpload: async (file, options) => {
+        console.log('Starting upload...');
+        return { file, options };
+    },
+    afterUpload: async (result) => {
+        console.log('Upload complete:', result.url);
+        return result;
+    },
+    onError: async (error) => {
+        console.error('Upload failed:', error.message);
+    },
+});
+
+// Register the plugin
+await uploader.use(loggerPlugin);
+```
+
+### 3. Upload with Transformations
+
+```javascript
+const result = await uploader.upload(file, {
+    folder: 'thumbnails',
+    transformation: {
+        width: 400,
+        height: 400,
+        fit: 'cover',
+        format: 'webp',
+        quality: 80,
+    },
+});
+```
+
+### 4. Batch Operations
+
+```javascript
+// Upload multiple files
+const results = await uploader.uploadMultiple(files, { 
+    folder: 'batch' 
+});
+
+// Delete multiple files
+await uploader.deleteMultiple(['id1', 'id2', 'id3']);
+```
+
+## Environment Variables
+
+See `.env.example` for all required credentials.
