@@ -5,7 +5,7 @@ import type {
     TransformationOptions,
     ProviderFeatures,
 } from '@fluxmedia/core';
-import { MediaErrorCode, createMediaError } from '@fluxmedia/core';
+import { MediaErrorCode, createMediaError, getFileType } from '@fluxmedia/core';
 import { CloudinaryFeatures } from './features';
 import type {
     CloudinaryConfig,
@@ -72,10 +72,16 @@ export class CloudinaryProvider implements MediaProvider {
                 options.onProgress(0);
             }
 
+            // Detect file type using magic bytes for accurate MIME
+            let uploadData: unknown = file;
+            if (file instanceof Buffer) {
+                const detectedType = await getFileType(file);
+                const mimeType = detectedType?.mime ?? 'application/octet-stream';
+                uploadData = `data:${mimeType};base64,${file.toString('base64')}`;
+            }
+
             const result = await client.uploader.upload(
-                file instanceof Buffer
-                    ? `data:${this.getFileType(file)};base64,${file.toString('base64')}`
-                    : (file as unknown),
+                uploadData,
                 cloudinaryOptions
             );
 
@@ -226,18 +232,5 @@ export class CloudinaryProvider implements MediaProvider {
         }
 
         return uploadResult;
-    }
-
-    private getFileType(buffer: Buffer): string {
-        if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-            return 'image/jpeg';
-        }
-        if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) {
-            return 'image/png';
-        }
-        if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
-            return 'image/gif';
-        }
-        return 'application/octet-stream';
     }
 }

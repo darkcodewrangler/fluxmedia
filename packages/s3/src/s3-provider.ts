@@ -5,7 +5,7 @@ import type {
   TransformationOptions,
   ProviderFeatures,
 } from '@fluxmedia/core';
-import { MediaErrorCode, createMediaError } from '@fluxmedia/core';
+import { MediaErrorCode, createMediaError, getFileType } from '@fluxmedia/core';
 import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
 import { S3Features } from './features';
 import type { S3Config } from './types';
@@ -116,6 +116,9 @@ export class S3Provider implements MediaProvider {
     try {
       const key = this.generateKey(options);
 
+      // Detect content type using magic bytes for accuracy
+      const contentType = await this.getContentType(file);
+
       // Use Upload class for ALL files (small and large)
       // It automatically handles multipart for files >5MB
       const upload = new Upload({
@@ -124,7 +127,7 @@ export class S3Provider implements MediaProvider {
           Bucket: this.config.bucket,
           Key: key,
           Body: file,
-          ContentType: this.getContentType(file),
+          ContentType: contentType,
           Metadata: options?.metadata as Record<string, string> | undefined,
         },
         // Configuration for multipart upload
@@ -286,9 +289,11 @@ export class S3Provider implements MediaProvider {
     return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
   }
 
-  private getContentType(file: File | Buffer): string {
+  private async getContentType(file: File | Buffer): Promise<string> {
     if (file instanceof Buffer) {
-      return 'application/octet-stream';
+      // Use magic byte detection for accurate MIME type
+      const detected = await getFileType(file);
+      return detected?.mime ?? 'application/octet-stream';
     }
     return (file as File).type || 'application/octet-stream';
   }
