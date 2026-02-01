@@ -2,10 +2,6 @@
  * Configuration options for Cloudflare R2 provider
  */
 export interface R2Config {
-    /**
-     * Cloudflare account ID
-     */
-    accountId: string;
 
     /**
      * R2 bucket name
@@ -27,3 +23,11 @@ export interface R2Config {
      */
     publicUrl?: string;
 }
+
+export interface R2ProviderConfigWithAccountId extends R2Config {
+    accountId: string;
+}
+export interface R2ProviderConfigWithEndpoint extends R2Config {
+    endpoint: string;
+}
+export type R2ProviderConfig = R2ProviderConfigWithAccountId | R2ProviderConfigWithEndpoint;

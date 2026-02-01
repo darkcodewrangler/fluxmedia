@@ -8,5 +8,5 @@ export default defineConfig({
     clean: true,
     platform: 'node',
     treeshake: true,
-    external: ['@aws-sdk/client-s3', '@fluxmedia/core'],
+    external: ['@aws-sdk/client-s3', '@aws-sdk/lib-storage', '@fluxmedia/core'],
 });

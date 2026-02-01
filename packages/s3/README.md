@@ -5,8 +5,27 @@ AWS S3 provider for FluxMedia.
 ## Installation
 
 ```bash
-pnpm add @fluxmedia/core @fluxmedia/s3 @aws-sdk/client-s3
+pnpm add @fluxmedia/core @fluxmedia/s3 @aws-sdk/client-s3 @aws-sdk/lib-storage
 ```
+
+## AWS SDK Dependencies
+
+This package requires the following AWS SDK v3 packages as peer dependencies:
+
+- `@aws-sdk/client-s3` - Core S3 client and commands
+- `@aws-sdk/lib-storage` - Smart upload manager with automatic multipart handling
+
+### Why @aws-sdk/lib-storage?
+
+This package uses the `Upload` class from `@aws-sdk/lib-storage` which:
+
+- Automatically handles multipart uploads for files >5MB
+- Uploads parts in parallel for better performance
+- Provides built-in progress tracking
+- Handles retries and error recovery
+- Cleans up failed uploads automatically
+
+This means you get enterprise-grade upload reliability without writing complex multipart upload logic.
 
 ## Usage
 

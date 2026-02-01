@@ -8,28 +8,42 @@ import type {
 import { MediaErrorCode, createMediaError } from '@fluxmedia/core';
 import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
 import { R2Features } from './features';
-import type { R2Config } from './types';
+import type { R2ProviderConfig, R2ProviderConfigWithAccountId, R2ProviderConfigWithEndpoint } from './types';
 
-// Cached command imports for performance
+// Cached SDK imports for performance
 let cachedS3Client: typeof import('@aws-sdk/client-s3').S3Client | null = null;
-let cachedPutObjectCommand: typeof import('@aws-sdk/client-s3').PutObjectCommand | null = null;
 let cachedDeleteObjectCommand: typeof import('@aws-sdk/client-s3').DeleteObjectCommand | null = null;
 let cachedHeadObjectCommand: typeof import('@aws-sdk/client-s3').HeadObjectCommand | null = null;
+let cachedUpload: typeof import('@aws-sdk/lib-storage').Upload | null = null;
+
+type Progress = {
+  loaded?: number;
+  total?: number;
+  part?: number;
+  Key?: string;
+  Bucket?: string;
+};
 
 async function getS3Imports() {
   if (!cachedS3Client) {
     const sdk = await import('@aws-sdk/client-s3');
     cachedS3Client = sdk.S3Client;
-    cachedPutObjectCommand = sdk.PutObjectCommand;
     cachedDeleteObjectCommand = sdk.DeleteObjectCommand;
     cachedHeadObjectCommand = sdk.HeadObjectCommand;
   }
   return {
     S3Client: cachedS3Client!,
-    PutObjectCommand: cachedPutObjectCommand!,
     DeleteObjectCommand: cachedDeleteObjectCommand!,
     HeadObjectCommand: cachedHeadObjectCommand!,
   };
+}
+
+async function getUploadClass() {
+  if (!cachedUpload) {
+    const libStorage = await import('@aws-sdk/lib-storage');
+    cachedUpload = libStorage.Upload;
+  }
+  return cachedUpload!;
 }
 
 /**
@@ -42,12 +56,19 @@ export class R2Provider implements MediaProvider {
 
   private client: S3ClientType | null = null;
   private clientPromise: Promise<S3ClientType> | null = null;
-  private config: R2Config;
+  private config: R2ProviderConfig;
 
-  constructor(config: R2Config) {
-    // Validate required fields (Issue #3)
-    const required: (keyof R2Config)[] = ['accountId', 'bucket', 'accessKeyId', 'secretAccessKey'];
+  constructor(config: R2ProviderConfig) {
+    // Validate required fields
+    const required: (keyof R2ProviderConfig)[] = ['bucket', 'accessKeyId', 'secretAccessKey'];
     const missing = required.filter((field) => !config[field]);
+    if (!(config as R2ProviderConfigWithAccountId).accountId && !(config as R2ProviderConfigWithEndpoint).endpoint) {
+      throw createMediaError(
+        MediaErrorCode.INVALID_CONFIG,
+        'r2',
+        new Error('Either accountId or endpoint must be provided')
+      );
+    }
 
     if (missing.length > 0) {
       throw createMediaError(
@@ -70,7 +91,7 @@ export class R2Provider implements MediaProvider {
   }
 
   /**
-   * Initializes the S3 client lazily with race condition protection (Issue #9).
+   * Initializes the S3 client lazily with race condition protection.
    */
   private async ensureClient(): Promise<S3ClientType> {
     if (!this.clientPromise) {
@@ -81,9 +102,10 @@ export class R2Provider implements MediaProvider {
 
   private async initializeClient(): Promise<S3ClientType> {
     const { S3Client } = await getS3Imports();
+    const endpoint = (this.config as R2ProviderConfigWithEndpoint).endpoint || `https://${(this.config as R2ProviderConfigWithAccountId).accountId}.r2.cloudflarestorage.com`;
     const client = new S3Client({
-      region: 'auto',
-      endpoint: `https://${this.config.accountId}.r2.cloudflarestorage.com`,
+      region: 'auto', // R2 uses 'auto' for region
+      endpoint,
       credentials: {
         accessKeyId: this.config.accessKeyId,
         secretAccessKey: this.config.secretAccessKey,
@@ -95,31 +117,42 @@ export class R2Provider implements MediaProvider {
 
   async upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult> {
     const client = await this.ensureClient();
-    const { PutObjectCommand } = await getS3Imports();
+    const Upload = await getUploadClass();
 
     try {
       const key = this.generateKey(options);
-      const body = file instanceof Buffer ? file : await this.fileToBuffer(file as File);
 
-      if (options?.onProgress) {
-        options.onProgress(0);
-      }
-
-      const command = new PutObjectCommand({
-        Bucket: this.config.bucket,
-        Key: key,
-        Body: body,
-        ContentType: this.getContentType(file),
-        Metadata: options?.metadata as Record<string, string> | undefined,
+      // Use Upload class for ALL files (small and large)
+      // It automatically handles multipart for files >5MB
+      const upload = new Upload({
+        client,
+        params: {
+          Bucket: this.config.bucket,
+          Key: key,
+          Body: file,
+          ContentType: this.getContentType(file),
+          Metadata: options?.metadata as Record<string, string> | undefined,
+        },
+        // Configuration for multipart upload
+        queueSize: 4, // Upload 4 parts in parallel
+        partSize: 5 * 1024 * 1024, // 5MB per part
+        leavePartsOnError: false, // Auto-cleanup failed uploads
       });
 
-      await client.send(command);
-
+      // Track upload progress via native event
       if (options?.onProgress) {
-        options.onProgress(100);
+        upload.on('httpUploadProgress', (progress: Progress) => {
+          if (progress.total) {
+            const percentComplete = (progress.loaded! / progress.total) * 100;
+            options.onProgress!(percentComplete);
+          }
+        });
       }
 
-      // Use byteLength for correct size calculation (Issue #13)
+      // Execute upload
+      await upload.done();
+
+      // Use byteLength for correct size calculation
       const size = file instanceof Buffer ? file.byteLength : (file as File).size;
       return this.createResult(key, size);
     } catch (error) {
@@ -173,7 +206,7 @@ export class R2Provider implements MediaProvider {
   }
 
   getUrl(id: string, transform?: TransformationOptions): string {
-    // Warn about unsupported transformations (Issue #11)
+    // Warn about unsupported transformations
     if (transform && Object.keys(transform).length > 0) {
       console.warn(
         'R2Provider: Image transformations are not supported. ' +
@@ -181,7 +214,7 @@ export class R2Provider implements MediaProvider {
       );
     }
 
-    // Require publicUrl configuration (Issue #2)
+    // Require publicUrl configuration
     if (!this.config.publicUrl) {
       throw createMediaError(
         MediaErrorCode.INVALID_CONFIG,
@@ -199,7 +232,7 @@ export class R2Provider implements MediaProvider {
     files: File[] | Buffer[],
     options?: UploadOptions & { concurrency?: number }
   ): Promise<UploadResult[]> {
-    // Batched processing with concurrency control (Issue #5)
+    // Batched processing with concurrency control
     const concurrency = options?.concurrency ?? 5;
     const results: UploadResult[] = [];
 
@@ -207,7 +240,7 @@ export class R2Provider implements MediaProvider {
       const batch = files.slice(i, i + concurrency);
       const batchResults = await Promise.all(
         batch.map((file) => {
-          // Clone options for each file to avoid shared state (Issue #14)
+          // Clone options for each file to avoid shared state
           const { concurrency: _, ...uploadOptions } = options ?? {};
           return this.upload(file, Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined);
         })
@@ -219,13 +252,13 @@ export class R2Provider implements MediaProvider {
   }
 
   async deleteMultiple(ids: string[]): Promise<void> {
-    // Batched processing with concurrency control (Issue #5)
+    // Batched processing with concurrency control
     const concurrency = 10;
     const failed: Array<{ id: string; error: unknown }> = [];
 
     for (let i = 0; i < ids.length; i += concurrency) {
       const batch = ids.slice(i, i + concurrency);
-      // Use Promise.allSettled for partial failure handling (Issue #6)
+      // Use Promise.allSettled for partial failure handling
       const results = await Promise.allSettled(
         batch.map((id) => this.delete(id).then(() => ({ id })))
       );
@@ -251,8 +284,8 @@ export class R2Provider implements MediaProvider {
     return this.client;
   }
 
-  // Prevent credential exposure in serialization (Issue #12)
-  toJSON() {
+  // Prevent credential exposure in serialization
+  toJSON(): { name: string; features: ProviderFeatures } {
     return {
       name: this.name,
       features: this.features,
@@ -281,11 +314,6 @@ export class R2Provider implements MediaProvider {
     return parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
   }
 
-  private async fileToBuffer(file: File): Promise<Buffer> {
-    const arrayBuffer = await file.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  }
-
   private createResult(key: string, size: number): UploadResult {
     return {
       id: key,
@@ -300,7 +328,7 @@ export class R2Provider implements MediaProvider {
   }
 
   /**
-   * Maps S3-specific errors to MediaError with appropriate codes (Issue #10)
+   * Maps S3-specific errors to MediaError with appropriate codes
    */
   private mapS3Error(error: unknown, defaultCode: MediaErrorCode): never {
     const err = error as { name?: string; message?: string };

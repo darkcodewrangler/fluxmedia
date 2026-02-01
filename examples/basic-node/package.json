@@ -11,7 +11,7 @@
     "dependencies": {
         "@fluxmedia/core": "workspace:*",
         "@fluxmedia/cloudinary": "workspace:*",
-        "cloudinary": "^2.0.0",
+        "cloudinary": "^2.9.0",
         "dotenv": "^16.4.1"
     }
 }

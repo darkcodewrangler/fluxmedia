@@ -10,27 +10,41 @@ import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
 import { S3Features } from './features';
 import type { S3Config } from './types';
 
-// Cached command imports for performance
+// Cached SDK imports for performance
 let cachedS3Client: typeof import('@aws-sdk/client-s3').S3Client | null = null;
-let cachedPutObjectCommand: typeof import('@aws-sdk/client-s3').PutObjectCommand | null = null;
 let cachedDeleteObjectCommand: typeof import('@aws-sdk/client-s3').DeleteObjectCommand | null =
   null;
 let cachedHeadObjectCommand: typeof import('@aws-sdk/client-s3').HeadObjectCommand | null = null;
+let cachedUpload: typeof import('@aws-sdk/lib-storage').Upload | null = null;
+
+type Progress = {
+  loaded?: number;
+  total?: number;
+  part?: number;
+  Key?: string;
+  Bucket?: string;
+};
 
 async function getS3Imports() {
   if (!cachedS3Client) {
     const sdk = await import('@aws-sdk/client-s3');
     cachedS3Client = sdk.S3Client;
-    cachedPutObjectCommand = sdk.PutObjectCommand;
     cachedDeleteObjectCommand = sdk.DeleteObjectCommand;
     cachedHeadObjectCommand = sdk.HeadObjectCommand;
   }
   return {
     S3Client: cachedS3Client!,
-    PutObjectCommand: cachedPutObjectCommand!,
     DeleteObjectCommand: cachedDeleteObjectCommand!,
     HeadObjectCommand: cachedHeadObjectCommand!,
   };
+}
+
+async function getUploadClass() {
+  if (!cachedUpload) {
+    const libStorage = await import('@aws-sdk/lib-storage');
+    cachedUpload = libStorage.Upload;
+  }
+  return cachedUpload!;
 }
 
 /**
@@ -82,46 +96,55 @@ export class S3Provider implements MediaProvider {
 
   private async initializeClient(): Promise<S3ClientType> {
     const { S3Client } = await getS3Imports();
-    const client = new S3Client([
-      {
-        region: this.config.region,
-        credentials: {
-          accessKeyId: this.config.accessKeyId,
-          secretAccessKey: this.config.secretAccessKey,
-        },
-        endpoint: this.config.endpoint,
-        forcePathStyle: this.config.forcePathStyle,
+    const client = new S3Client({
+      region: this.config.region,
+      credentials: {
+        accessKeyId: this.config.accessKeyId,
+        secretAccessKey: this.config.secretAccessKey,
       },
-    ]);
+      ...(this.config.endpoint && { endpoint: this.config.endpoint }),
+      ...(this.config.forcePathStyle !== undefined && { forcePathStyle: this.config.forcePathStyle }),
+    });
     this.client = client;
     return client;
   }
 
   async upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult> {
     const client = await this.ensureClient();
-    const { PutObjectCommand } = await getS3Imports();
+    const Upload = await getUploadClass();
 
     try {
       const key = this.generateKey(options);
-      const body = file instanceof Buffer ? file : await this.fileToBuffer(file as File);
 
-      if (options?.onProgress) {
-        options.onProgress(0);
-      }
-
-      const command = new PutObjectCommand({
-        Bucket: this.config.bucket,
-        Key: key,
-        Body: body,
-        ContentType: this.getContentType(file),
-        Metadata: options?.metadata as Record<string, string> | undefined,
+      // Use Upload class for ALL files (small and large)
+      // It automatically handles multipart for files >5MB
+      const upload = new Upload({
+        client,
+        params: {
+          Bucket: this.config.bucket,
+          Key: key,
+          Body: file,
+          ContentType: this.getContentType(file),
+          Metadata: options?.metadata as Record<string, string> | undefined,
+        },
+        // Configuration for multipart upload
+        queueSize: 4, // Upload 4 parts in parallel
+        partSize: 5 * 1024 * 1024, // 5MB per part (S3 minimum)
+        leavePartsOnError: false, // Auto-cleanup failed uploads
       });
 
-      await client.send(command);
-
+      // Track upload progress via native event
       if (options?.onProgress) {
-        options.onProgress(100);
+        upload.on('httpUploadProgress', (progress: Progress) => {
+          if (progress.total) {
+            const percentComplete = (progress.loaded! / progress.total) * 100;
+            options.onProgress!(percentComplete);
+          }
+        });
       }
+
+      // Execute upload
+      await upload.done();
 
       // Use byteLength for correct size calculation
       const size = file instanceof Buffer ? file.byteLength : (file as File).size;
@@ -246,7 +269,7 @@ export class S3Provider implements MediaProvider {
   }
 
   // Prevent credential exposure in serialization
-  toJSON() {
+  toJSON(): { name: string; features: ProviderFeatures } {
     return {
       name: this.name,
       features: this.features,
@@ -273,11 +296,6 @@ export class S3Provider implements MediaProvider {
   private extractFormat(key: string): string {
     const parts = key.split('.');
     return parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
-  }
-
-  private async fileToBuffer(file: File): Promise<Buffer> {
-    const arrayBuffer = await file.arrayBuffer();
-    return Buffer.from(arrayBuffer);
   }
 
   private createResult(key: string, size: number): UploadResult {
