@@ -52,9 +52,9 @@
     },
     "devDependencies": {
         "@types/node": "^20.11.5",
-        "tsdown": "^0.2.1",
+        "tsdown": "^0.20.1",
         "typescript": "^5.3.3",
-        "vitest": "^1.2.2"
+        "vitest": "^4.0.18"
     },
     "peerDependencies": {
         "cloudinary": "^2.9.0"
