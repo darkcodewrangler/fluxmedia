@@ -8,11 +8,16 @@ import type {
 import { MediaErrorCode, createMediaError, getFileType } from '@fluxmedia/core';
 import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
 import { R2Features } from './features';
-import type { R2ProviderConfig, R2ProviderConfigWithAccountId, R2ProviderConfigWithEndpoint } from './types';
+import type {
+  R2ProviderConfig,
+  R2ProviderConfigWithAccountId,
+  R2ProviderConfigWithEndpoint,
+} from './types';
 
 // Cached SDK imports for performance
 let cachedS3Client: typeof import('@aws-sdk/client-s3').S3Client | null = null;
-let cachedDeleteObjectCommand: typeof import('@aws-sdk/client-s3').DeleteObjectCommand | null = null;
+let cachedDeleteObjectCommand: typeof import('@aws-sdk/client-s3').DeleteObjectCommand | null =
+  null;
 let cachedHeadObjectCommand: typeof import('@aws-sdk/client-s3').HeadObjectCommand | null = null;
 let cachedUpload: typeof import('@aws-sdk/lib-storage').Upload | null = null;
 
@@ -62,7 +67,10 @@ export class R2Provider implements MediaProvider {
     // Validate required fields
     const required: (keyof R2ProviderConfig)[] = ['bucket', 'accessKeyId', 'secretAccessKey'];
     const missing = required.filter((field) => !config[field]);
-    if (!(config as R2ProviderConfigWithAccountId).accountId && !(config as R2ProviderConfigWithEndpoint).endpoint) {
+    if (
+      !(config as R2ProviderConfigWithAccountId).accountId &&
+      !(config as R2ProviderConfigWithEndpoint).endpoint
+    ) {
       throw createMediaError(
         MediaErrorCode.INVALID_CONFIG,
         'r2',
@@ -102,7 +110,9 @@ export class R2Provider implements MediaProvider {
 
   private async initializeClient(): Promise<S3ClientType> {
     const { S3Client } = await getS3Imports();
-    const endpoint = (this.config as R2ProviderConfigWithEndpoint).endpoint || `https://${(this.config as R2ProviderConfigWithAccountId).accountId}.r2.cloudflarestorage.com`;
+    const endpoint =
+      (this.config as R2ProviderConfigWithEndpoint).endpoint ||
+      `https://${(this.config as R2ProviderConfigWithAccountId).accountId}.r2.cloudflarestorage.com`;
     const client = new S3Client({
       region: 'auto', // R2 uses 'auto' for region
       endpoint,
@@ -123,7 +133,7 @@ export class R2Provider implements MediaProvider {
       const key = this.generateKey(options);
 
       // Detect content type using magic bytes for accuracy
-      const contentType = await this.getContentType(file);
+      const { contentType, extension } = await this.getContentType(file);
 
       // Use Upload class for ALL files (small and large)
       // It automatically handles multipart for files >5MB
@@ -134,7 +144,10 @@ export class R2Provider implements MediaProvider {
           Key: key,
           Body: file,
           ContentType: contentType,
-          Metadata: options?.metadata as Record<string, string> | undefined,
+          Metadata: {
+            ...(options?.metadata || {}),
+            extension,
+          },
         },
         // Configuration for multipart upload
         queueSize: 4, // Upload 4 parts in parallel
@@ -157,7 +170,7 @@ export class R2Provider implements MediaProvider {
 
       // Use byteLength for correct size calculation
       const size = file instanceof Buffer ? file.byteLength : (file as File).size;
-      return this.createResult(key, size);
+      return this.createResult(key, size, extension, options?.metadata as Record<string, string> | undefined);
     } catch (error) {
       throw this.mapS3Error(error, MediaErrorCode.UPLOAD_FAILED);
     }
@@ -190,16 +203,17 @@ export class R2Provider implements MediaProvider {
       });
 
       const response = await client.send(command);
-
+      const metadata = response.Metadata;
       return {
         id,
         url: this.getUrl(id),
         publicUrl: this.getUrl(id),
         size: response.ContentLength ?? 0,
-        format: this.extractFormat(id),
+        format: metadata?.extension || "",
         provider: this.name,
         metadata: {
           contentType: response.ContentType,
+          extension: metadata?.extension,
         },
         createdAt: response.LastModified ?? new Date(),
       };
@@ -245,7 +259,10 @@ export class R2Provider implements MediaProvider {
         batch.map((file) => {
           // Clone options for each file to avoid shared state
           const { concurrency: _, ...uploadOptions } = options ?? {};
-          return this.upload(file, Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined);
+          return this.upload(
+            file,
+            Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined
+          );
         })
       );
       results.push(...batchResults);
@@ -278,7 +295,9 @@ export class R2Provider implements MediaProvider {
       throw createMediaError(
         MediaErrorCode.DELETE_FAILED,
         this.name,
-        new Error(`Failed to delete ${failed.length} of ${ids.length} files: ${failed.map((f) => f.id).join(', ')}`)
+        new Error(
+          `Failed to delete ${failed.length} of ${ids.length} files: ${failed.map((f) => f.id).join(', ')}`
+        )
       );
     }
   }
@@ -299,9 +318,10 @@ export class R2Provider implements MediaProvider {
     const baseFilename = options?.filename ?? this.generateRandomId();
     // When uniqueFilename is true (default) or not specified, append a short ID
     const shouldMakeUnique = options?.uniqueFilename !== false;
-    const filename = shouldMakeUnique && options?.filename
-      ? `${baseFilename}-${this.generateShortId()}`
-      : baseFilename;
+    const filename =
+      shouldMakeUnique && options?.filename
+        ? `${baseFilename}-${this.generateShortId()}`
+        : baseFilename;
     const folder = options?.folder ? `${options.folder}/` : '';
     return `${folder}${filename}`;
   }
@@ -314,13 +334,13 @@ export class R2Provider implements MediaProvider {
     return Math.random().toString(36).substring(2, 8);
   }
 
-  private async getContentType(file: File | Buffer): Promise<string> {
+  private async getContentType(file: File | Buffer): Promise<{ contentType: string, extension: string }> {
     if (file instanceof Buffer) {
       // Use magic byte detection for accurate MIME type
       const detected = await getFileType(file);
-      return detected?.mime ?? 'application/octet-stream';
+      return { contentType: detected?.mime ?? 'application/octet-stream', extension: detected?.ext ?? '' };
     }
-    return (file as File).type || 'application/octet-stream';
+    return { contentType: (file as File).type || 'application/octet-stream', extension: (file as File).name.split('.').pop() || '' };
   }
 
   private extractFormat(key: string): string {
@@ -328,15 +348,15 @@ export class R2Provider implements MediaProvider {
     return parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
   }
 
-  private createResult(key: string, size: number): UploadResult {
+  private createResult(key: string, size: number, extension: string, metadata: Record<string, string> | undefined): UploadResult {
     return {
       id: key,
       url: this.getUrl(key),
       publicUrl: this.getUrl(key),
       size,
-      format: this.extractFormat(key),
+      format: extension,
       provider: this.name,
-      metadata: {},
+      metadata: metadata || {},
       createdAt: new Date(),
     };
   }
@@ -364,11 +384,7 @@ export class R2Provider implements MediaProvider {
     }
 
     if (err.name === 'NoSuchKey') {
-      throw createMediaError(
-        MediaErrorCode.FILE_NOT_FOUND,
-        this.name,
-        error
-      );
+      throw createMediaError(MediaErrorCode.FILE_NOT_FOUND, this.name, error);
     }
 
     throw createMediaError(defaultCode, this.name, error);

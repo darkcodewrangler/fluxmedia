@@ -14,7 +14,7 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "pnpm -r --filter './packages/*' run build",
+    "build": "pnpm -r --filter '@fluxmedia/*' run build",
     "clean": "pnpm -r run clean",
     "dev": "pnpm -r run dev",
     "format": "prettier --write .",

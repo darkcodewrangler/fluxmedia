@@ -117,7 +117,7 @@ export class S3Provider implements MediaProvider {
       const key = this.generateKey(options);
 
       // Detect content type using magic bytes for accuracy
-      const contentType = await this.getContentType(file);
+      const { contentType, extension } = await this.getContentType(file);
 
       // Use Upload class for ALL files (small and large)
       // It automatically handles multipart for files >5MB
@@ -128,7 +128,10 @@ export class S3Provider implements MediaProvider {
           Key: key,
           Body: file,
           ContentType: contentType,
-          Metadata: options?.metadata as Record<string, string> | undefined,
+          Metadata: {
+            ...(options?.metadata || {}),
+            extension,
+          } as Record<string, string> | undefined,
         },
         // Configuration for multipart upload
         queueSize: 4, // Upload 4 parts in parallel
@@ -151,7 +154,7 @@ export class S3Provider implements MediaProvider {
 
       // Use byteLength for correct size calculation
       const size = file instanceof Buffer ? file.byteLength : (file as File).size;
-      return this.createResult(key, size);
+      return this.createResult(key, size, extension, options?.metadata as Record<string, string> | undefined);
     } catch (error) {
       throw this.mapS3Error(error, MediaErrorCode.UPLOAD_FAILED);
     }
@@ -184,16 +187,17 @@ export class S3Provider implements MediaProvider {
       });
 
       const response = await client.send(command);
-
+      const metadata = response.Metadata;
       return {
         id,
         url: this.getUrl(id),
         publicUrl: this.getUrl(id),
         size: response.ContentLength ?? 0,
-        format: this.extractFormat(id),
+        format: metadata?.extension || "",
         provider: this.name,
         metadata: {
           contentType: response.ContentType,
+          extension: metadata?.extension,
         },
         createdAt: response.LastModified ?? new Date(),
       };
@@ -298,29 +302,26 @@ export class S3Provider implements MediaProvider {
     return Math.random().toString(36).substring(2, 8);
   }
 
-  private async getContentType(file: File | Buffer): Promise<string> {
+  private async getContentType(file: File | Buffer): Promise<{ contentType: string, extension: string }> {
     if (file instanceof Buffer) {
       // Use magic byte detection for accurate MIME type
       const detected = await getFileType(file);
-      return detected?.mime ?? 'application/octet-stream';
+      return { contentType: detected?.mime ?? 'application/octet-stream', extension: detected?.ext ?? '' };
     }
-    return (file as File).type || 'application/octet-stream';
+    return { contentType: (file as File).type || 'application/octet-stream', extension: (file as File).name.split('.').pop() || '' };
   }
 
-  private extractFormat(key: string): string {
-    const parts = key.split('.');
-    return parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
-  }
 
-  private createResult(key: string, size: number): UploadResult {
+
+  private createResult(key: string, size: number, extension: string, metadata: Record<string, string> | undefined): UploadResult {
     return {
       id: key,
       url: this.getUrl(key),
       publicUrl: this.getUrl(key),
       size,
-      format: this.extractFormat(key),
+      format: extension,
       provider: this.name,
-      metadata: {},
+      metadata: metadata || {},
       createdAt: new Date(),
     };
   }
