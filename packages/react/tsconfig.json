@@ -17,10 +17,5 @@
         "dist",
         "**/__tests__/**",
         "**/*.test.ts"
-    ],
-    "references": [
-        {
-            "path": "../core"
-        }
     ]
 }

@@ -13,6 +13,17 @@ import type {
     CloudinaryUploadResponse,
 } from './types';
 
+// Cached SDK import for performance (shared across all instances)
+let cachedCloudinary: typeof import('cloudinary').v2 | null = null;
+
+async function getCloudinarySDK() {
+    if (!cachedCloudinary) {
+        const cloudinaryModule = await import('cloudinary');
+        cachedCloudinary = cloudinaryModule.v2;
+    }
+    return cachedCloudinary;
+}
+
 /**
  * Cloudinary provider implementation.
  * Provides full-featured media upload with transformations, AI tagging, and more.
@@ -33,6 +44,7 @@ export class CloudinaryProvider implements MediaProvider {
 
     /**
      * Lazy-loads the Cloudinary SDK to minimize bundle size.
+     * Uses module-level caching for the SDK import.
      */
     private async ensureClient(): Promise<{
         uploader: {
@@ -43,14 +55,14 @@ export class CloudinaryProvider implements MediaProvider {
         url: (publicId: string, options?: unknown) => string;
     }> {
         if (!this.client) {
-            const cloudinary = await import('cloudinary');
-            this.client = cloudinary.v2;
-            (this.client as { config: (config: unknown) => void }).config({
+            const cloudinary = await getCloudinarySDK();
+            cloudinary.config({
                 cloud_name: this.config.cloudName,
                 api_key: this.config.apiKey,
                 api_secret: this.config.apiSecret,
                 secure: this.config.secure,
             });
+            this.client = cloudinary;
         }
         return this.client as {
             uploader: {
