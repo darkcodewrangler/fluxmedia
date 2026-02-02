@@ -1,6 +1,6 @@
 # @fluxmedia/r2
 
-Cloudflare R2 provider for FluxMedia.
+Cloudflare R2 provider for FluxMedia - cost-effective storage with zero egress fees.
 
 ## Installation
 
@@ -8,14 +8,9 @@ Cloudflare R2 provider for FluxMedia.
 pnpm add @fluxmedia/core @fluxmedia/r2 @aws-sdk/client-s3 @aws-sdk/lib-storage
 ```
 
-## AWS SDK Dependencies
+R2 uses the S3-compatible API, so it requires the AWS SDK.
 
-This package requires the following AWS SDK v3 packages as peer dependencies:
-
-- `@aws-sdk/client-s3` - Core S3 client (R2 is S3-compatible)
-- `@aws-sdk/lib-storage` - Smart upload manager with automatic multipart handling
-
-## Usage
+## Quick Start
 
 ```typescript
 import { MediaUploader } from '@fluxmedia/core';
@@ -23,41 +18,112 @@ import { R2Provider } from '@fluxmedia/r2';
 
 const uploader = new MediaUploader(
   new R2Provider({
-    accountId: 'your-account-id',// optional if endpoint is provided
-    endpoint: 'https://your-account-id.r2.cloudflarestorage.com',// optional if accountId is provided
+    accountId: 'your-cloudflare-account-id',
     bucket: 'my-bucket',
-    accessKeyId: 'your-access-key',
-    secretAccessKey: 'your-secret-key',
-    publicUrl: 'https://cdn.example.com' // optional, but required if you want the objects to be publicly accessible
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    publicUrl: 'https://cdn.example.com' // Optional custom domain
   })
 );
 
 const result = await uploader.upload(file, {
   folder: 'uploads'
 });
+
+console.log(result.url);
 ```
 
-## Features
+## Why R2?
 
-R2 is a storage-only provider (S3-compatible):
-
-- File upload/download
-- Multipart upload for large files
-- Zero egress fees
-- No image transformations (use Cloudflare Images)
-- No video processing
+- **Zero egress fees** - Free outbound data transfer
+- **S3-compatible** - Easy migration from S3
+- **Global distribution** - Cloudflare's edge network
+- **Cost-effective** - Only pay for storage and operations
 
 ## Configuration
 
 ```typescript
 interface R2Config {
-  endpoint?: string;      // R2 endpoint (optional, will be auto-generated if not provided)
-  accountId: string;      // Cloudflare account ID (optional if endpoint is provided)
-  bucket: string;         // R2 bucket name
-  accessKeyId: string;    // R2 Access Key
-  secretAccessKey: string; // R2 Secret Key
-  publicUrl?: string;     // Custom public URL
+  accountId?: string;       // Cloudflare account ID
+  endpoint?: string;        // Custom endpoint (alternative to accountId)
+  bucket: string;           // R2 bucket name
+  accessKeyId: string;      // R2 Access Key
+  secretAccessKey: string;  // R2 Secret Key
+  publicUrl?: string;       // Custom public URL for the bucket
 }
+```
+
+> **Note:** Provide either `accountId` or `endpoint`. The endpoint will be auto-generated from accountId if not provided.
+
+## Getting R2 Credentials
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → R2
+2. Create a bucket
+3. Click "Manage R2 API Tokens"
+4. Create a token with read/write permissions
+5. Copy the Access Key ID and Secret Access Key
+
+## Upload with Progress
+
+```typescript
+const result = await uploader.upload(file, {
+  folder: 'uploads',
+  onProgress: (percent) => {
+    console.log(`Upload progress: ${percent}%`);
+  }
+});
+```
+
+## Batch Uploads
+
+Upload multiple files with concurrency control:
+
+```typescript
+const results = await uploader.uploadMultiple(files, {
+  folder: 'batch-uploads',
+  concurrency: 5,
+  onBatchProgress: (completed, total) => {
+    console.log(`Uploaded ${completed}/${total} files`);
+  }
+});
+```
+
+## Delete Files
+
+```typescript
+// Delete single file
+await uploader.delete(result.id);
+
+// Delete multiple files
+await uploader.deleteMultiple(['file1', 'file2', 'file3']);
+```
+
+## Native SDK Access
+
+Access the underlying S3-compatible client for advanced operations:
+
+```typescript
+const client = uploader.provider.native;
+
+// Use native AWS SDK methods with R2
+const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+const objects = await client.send(new ListObjectsV2Command({
+  Bucket: 'my-bucket'
+}));
+```
+
+## Adding Transformations
+
+R2 is storage-only. For image transformations, use [Cloudflare Images](https://developers.cloudflare.com/images/) or consider [Cloudinary](/providers/cloudinary) for built-in support.
+
+## Environment Variables
+
+```bash
+CLOUDFLARE_ACCOUNT_ID=your-account-id
+R2_BUCKET=my-bucket
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_PUBLIC_URL=https://cdn.example.com
 ```
 
 ## License

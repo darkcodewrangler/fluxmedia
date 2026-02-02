@@ -68,6 +68,31 @@ const sizes = {
 };
 ```
 
+## Batch Uploads
+
+```typescript
+const results = await uploader.uploadMultiple(files, {
+  folder: 'batch-upload',
+  concurrency: 5,
+  onBatchProgress: (completed, total) => {
+    console.log(`Uploaded ${completed}/${total} files`);
+  }
+});
+```
+
+## Delete Files
+
+```typescript
+// Delete image
+await uploader.delete(imageId);
+
+// Delete video (specify resource type)
+await uploader.delete(videoId, { resourceType: 'video' });
+
+// Delete multiple
+await uploader.deleteMultiple(['id1', 'id2', 'id3']);
+```
+
 ## Supported Features
 
 ```typescript
@@ -75,15 +100,28 @@ uploader.supports('transformations.resize')   // true
 uploader.supports('transformations.crop')     // true
 uploader.supports('transformations.format')   // true
 uploader.supports('transformations.quality')  // true
+uploader.supports('transformations.blur')     // true
 uploader.supports('capabilities.aiTagging')   // true
 uploader.supports('capabilities.videoProcessing') // true
 ```
 
-## Access Native Client
+## Native SDK Access
+
+Access the full Cloudinary SDK for advanced operations:
 
 ```typescript
-const cloudinaryClient = uploader.provider.native;
+const cloudinary = uploader.provider.native;
+
 // Use native Cloudinary SDK features
+await cloudinary.uploader.explicit('sample', {
+  type: 'upload',
+  eager: [{ effect: 'sepia' }]
+});
+
+// Search API
+const results = await cloudinary.search
+  .expression('folder:products')
+  .execute();
 ```
 
 ## Environment Variables

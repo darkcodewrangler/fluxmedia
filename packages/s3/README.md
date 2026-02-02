@@ -1,6 +1,6 @@
 # @fluxmedia/s3
 
-AWS S3 provider for FluxMedia.
+AWS S3 provider for FluxMedia - simple, reliable file storage with the AWS ecosystem.
 
 ## Installation
 
@@ -8,26 +8,7 @@ AWS S3 provider for FluxMedia.
 pnpm add @fluxmedia/core @fluxmedia/s3 @aws-sdk/client-s3 @aws-sdk/lib-storage
 ```
 
-## AWS SDK Dependencies
-
-This package requires the following AWS SDK v3 packages as peer dependencies:
-
-- `@aws-sdk/client-s3` - Core S3 client and commands
-- `@aws-sdk/lib-storage` - Smart upload manager with automatic multipart handling
-
-### Why @aws-sdk/lib-storage?
-
-This package uses the `Upload` class from `@aws-sdk/lib-storage` which:
-
-- Automatically handles multipart uploads for files >5MB
-- Uploads parts in parallel for better performance
-- Provides built-in progress tracking
-- Handles retries and error recovery
-- Cleans up failed uploads automatically
-
-This means you get enterprise-grade upload reliability without writing complex multipart upload logic.
-
-## Usage
+## Quick Start
 
 ```typescript
 import { MediaUploader } from '@fluxmedia/core';
@@ -37,57 +18,124 @@ const uploader = new MediaUploader(
   new S3Provider({
     region: 'us-east-1',
     bucket: 'my-bucket',
-    accessKeyId: 'your-access-key',
-    secretAccessKey: 'your-secret-key'
-  }),
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  })
 );
 
+// Upload a file
 const result = await uploader.upload(file, {
   folder: 'uploads',
   filename: 'my-file.jpg'
 });
 
 console.log(result.url);
+// https://my-bucket.s3.us-east-1.amazonaws.com/uploads/my-file.jpg
 ```
 
 ## Features
 
-S3 is a storage-only provider:
-
-- File upload/download
-- Multipart upload for large files
-- Signed upload URLs
-- No image transformations (use CloudFront + Lambda@Edge)
-- No video processing
+- **Automatic multipart uploads** for files >5MB
+- **Progress tracking** for individual and batch uploads
+- **Batch operations** with concurrency control
+- **S3-compatible** - works with MinIO, DigitalOcean Spaces, etc.
 
 ## Configuration
 
 ```typescript
 interface S3Config {
-  region: string;        // AWS region
-  bucket: string;        // S3 bucket name
-  accessKeyId: string;   // AWS Access Key
-  secretAccessKey: string; // AWS Secret Key
-  endpoint?: string;     // Custom endpoint (for S3-compatible)
-  forcePathStyle?: boolean; // Force path style URLs
+  region: string;           // AWS region (e.g., 'us-east-1')
+  bucket: string;           // S3 bucket name
+  accessKeyId: string;      // AWS Access Key
+  secretAccessKey: string;  // AWS Secret Key
+  endpoint?: string;        // Custom endpoint for S3-compatible services
+  forcePathStyle?: boolean; // Use path-style URLs
 }
+```
+
+## Upload with Progress
+
+```typescript
+const result = await uploader.upload(file, {
+  folder: 'uploads',
+  onProgress: (percent) => {
+    console.log(`Upload progress: ${percent}%`);
+  }
+});
+```
+
+## Batch Uploads
+
+Upload multiple files with concurrency control:
+
+```typescript
+const results = await uploader.uploadMultiple(files, {
+  folder: 'batch-uploads',
+  concurrency: 5,
+  onBatchProgress: (completed, total) => {
+    console.log(`Uploaded ${completed}/${total} files`);
+  }
+});
+```
+
+## Delete Files
+
+```typescript
+// Delete single file
+await uploader.delete(result.id);
+
+// Delete multiple files
+await uploader.deleteMultiple(['file1', 'file2', 'file3']);
+```
+
+## Native SDK Access
+
+Access the underlying AWS S3 client for advanced operations:
+
+```typescript
+const s3Client = uploader.provider.native;
+
+// Use native AWS SDK methods
+const { ListBucketsCommand } = await import('@aws-sdk/client-s3');
+const buckets = await s3Client.send(new ListBucketsCommand({}));
 ```
 
 ## S3-Compatible Services
 
-Works with S3-compatible services like MinIO, DigitalOcean Spaces:
+Works with DigitalOcean Spaces, MinIO, and other S3-compatible services:
 
 ```typescript
+// DigitalOcean Spaces
 const uploader = new MediaUploader(
   new S3Provider({
     region: 'nyc3',
     bucket: 'my-space',
     accessKeyId: 'your-key',
     secretAccessKey: 'your-secret',
-    endpoint: 'https://nyc3.digitaloceanspaces.com',
-    forcePathStyle: false
+    endpoint: 'https://nyc3.digitaloceanspaces.com'
   })
 );
+
+// MinIO (self-hosted)
+const uploader = new MediaUploader(
+  new S3Provider({
+    region: 'us-east-1',
+    bucket: 'my-bucket',
+    accessKeyId: 'minio-key',
+    secretAccessKey: 'minio-secret',
+    endpoint: 'http://localhost:9000',
+    forcePathStyle: true
+  })
+);
+```
+
+## Environment Variables
+
+```bash
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_REGION=us-east-1
+S3_BUCKET=my-bucket
 ```
 
 ## License

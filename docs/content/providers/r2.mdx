@@ -5,7 +5,7 @@ Cost-effective storage with zero egress fees.
 ## Installation
 
 ```bash
-pnpm add @fluxmedia/core @fluxmedia/r2 @aws-sdk/client-s3
+pnpm add @fluxmedia/core @fluxmedia/r2 @aws-sdk/client-s3 @aws-sdk/lib-storage
 ```
 
 R2 uses the S3-compatible API, so it requires `@aws-sdk/client-s3`.
@@ -31,11 +31,14 @@ const uploader = new MediaUploader(
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `accountId` | string | ✅ | Cloudflare account ID |
-| `bucket` | string | ✅ | R2 bucket name |
-| `accessKeyId` | string | ✅ | R2 API token access key |
-| `secretAccessKey` | string | ✅ | R2 API token secret key |
-| `publicUrl` | string | ❌ | Custom public URL for the bucket |
+| `accountId` | string | Yes* | Cloudflare account ID |
+| `endpoint` | string | Yes* | R2 endpoint (alternative to accountId) |
+| `bucket` | string | Yes | R2 bucket name |
+| `accessKeyId` | string | Yes | R2 API token access key |
+| `secretAccessKey` | string | Yes | R2 API token secret key |
+| `publicUrl` | string | No | Custom public URL for the bucket |
+
+*Either `accountId` or `endpoint` is required.
 
 ## Getting R2 Credentials
 
@@ -53,10 +56,30 @@ const result = await uploader.upload(file, {
 });
 
 console.log(result.url);
-// https://your-bucket.account-id.r2.cloudflarestorage.com/uploads/file.jpg
-
-// Or with custom public URL
 // https://cdn.example.com/uploads/file.jpg
+```
+
+## Upload with Progress
+
+```typescript
+const result = await uploader.upload(file, {
+  folder: 'uploads',
+  onProgress: (percent) => {
+    console.log(`Upload progress: ${percent}%`);
+  }
+});
+```
+
+## Batch Uploads
+
+```typescript
+const results = await uploader.uploadMultiple(files, {
+  folder: 'batch-uploads',
+  concurrency: 5,
+  onBatchProgress: (completed, total) => {
+    console.log(`Uploaded ${completed}/${total} files`);
+  }
+});
 ```
 
 ## Why R2?
@@ -71,9 +94,22 @@ console.log(result.url);
 R2 is storage-only:
 
 ```typescript
-uploader.supports('transformations.resize')   // false
-uploader.supports('capabilities.signedUploads') // true
+uploader.supports('transformations.resize')      // false
+uploader.supports('capabilities.signedUploads')  // true
 uploader.supports('capabilities.multipartUpload') // true
+```
+
+## Native SDK Access
+
+Access the underlying S3-compatible client:
+
+```typescript
+const client = uploader.provider.native;
+
+const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+const objects = await client.send(new ListObjectsV2Command({
+  Bucket: 'my-bucket'
+}));
 ```
 
 ## Adding Transformations

@@ -2,23 +2,125 @@
 
 Extend FluxMedia with custom functionality using the plugin system.
 
-## Overview
+## Installation
 
-Plugins can hook into various lifecycle stages:
+```bash
+pnpm add @fluxmedia/plugins
 
-- **beforeUpload** - Modify file/options before upload
-- **afterUpload** - Modify result after upload
-- **onError** - Handle upload errors
-- **beforeDelete** - Modify ID before deletion
-- **afterDelete** - Run code after deletion
-- **beforeGetUrl** - Modify URL generation
+# For image optimization:
+pnpm add sharp
+```
 
-## Creating a Plugin
+## Using Plugins
+
+```typescript
+import { MediaUploader } from '@fluxmedia/core';
+import { 
+  createFileValidationPlugin,
+  createRetryPlugin 
+} from '@fluxmedia/plugins';
+
+const uploader = new MediaUploader(provider);
+
+// Add plugins
+await uploader.use(createFileValidationPlugin({
+  maxSize: 10 * 1024 * 1024,
+  allowedTypes: ['image/*']
+}));
+
+await uploader.use(createRetryPlugin({
+  maxRetries: 3
+}));
+```
+
+## Available Plugins
+
+### File Validation
+
+Validates files before upload.
+
+```typescript
+import { createFileValidationPlugin } from '@fluxmedia/plugins';
+
+const plugin = createFileValidationPlugin({
+  allowedTypes: ['image/*', 'video/mp4'],
+  maxSize: 10 * 1024 * 1024, // 10MB
+  blockedExtensions: ['.exe', '.bat'],
+});
+```
+
+### Image Optimization (Server-side)
+
+Optimizes images using sharp before upload.
+
+```typescript
+import { createImageOptimizationPlugin } from '@fluxmedia/plugins';
+
+const plugin = createImageOptimizationPlugin({
+  maxWidth: 2000,
+  maxHeight: 2000,
+  quality: 85,
+  format: 'webp',
+});
+```
+
+### Metadata Extraction
+
+Extracts EXIF data, dimensions, and file hashes.
+
+```typescript
+import { createMetadataExtractionPlugin } from '@fluxmedia/plugins';
+
+const plugin = createMetadataExtractionPlugin({
+  extractExif: true,
+  extractDimensions: true,
+  hashFile: true,
+});
+```
+
+### Analytics
+
+Logs and tracks upload operations.
+
+```typescript
+import { createAnalyticsPlugin } from '@fluxmedia/plugins';
+
+const plugin = createAnalyticsPlugin({
+  environment: 'production',
+  logLevel: 'info',
+  track: (event, data) => myAnalytics.track(event, data),
+});
+```
+
+### Retry
+
+Automatic retry with exponential backoff.
+
+```typescript
+import { createRetryPlugin, withRetry } from '@fluxmedia/plugins';
+
+// As a plugin
+const plugin = createRetryPlugin({
+  maxRetries: 3,
+  initialDelay: 1000,
+  exponentialBackoff: true,
+});
+
+// Or wrap any function
+const result = await withRetry(
+  () => uploader.upload(file),
+  { maxRetries: 3 }
+);
+```
+
+---
+
+## Creating Custom Plugins
 
 ```typescript
 import { createPlugin } from '@fluxmedia/core';
 
-const loggerPlugin = createPlugin('logger', {
+const myPlugin = createPlugin('my-plugin', {
   beforeUpload: async (file, options) => {
     console.log('Uploading:', file);
     return { file, options };
@@ -33,30 +135,53 @@ const loggerPlugin = createPlugin('logger', {
 });
 ```
 
-## Registering Plugins
+---
+
+## Plugin Lifecycle
 
 ```typescript
-const uploader = new MediaUploader(provider);
+interface FluxMediaPlugin {
+  name: string;
+  version?: string;
+  hooks: PluginHooks;
+  init?: () => Promise<void> | void;    // Called on register
+  destroy?: () => Promise<void> | void; // Called on unregister
+}
+```
 
-// Register a single plugin
-await uploader.use(loggerPlugin);
+## Plugin Hooks
 
-// Or chain multiple
-await uploader
-  .use(loggerPlugin)
-  .use(validationPlugin)
-  .use(compressionPlugin);
+- **beforeUpload** - Modify file/options before upload
+- **afterUpload** - Modify result after upload
+- **onError** - Handle upload errors
+- **beforeDelete** - Modify ID before deletion
+- **afterDelete** - Run code after deletion
+- **beforeGetUrl** - Modify URL generation
 
-// Or pass plugins in constructor
-const uploader = new MediaUploader(provider, [
-  loggerPlugin,
-  validationPlugin,
-]);
+---
+
+## Plugin Manager API
+
+```typescript
+// Check if plugin exists
+uploader.plugins.has('logger');
+
+// Get a plugin
+const plugin = uploader.plugins.get('logger');
+
+// Unregister
+await uploader.plugins.unregister('logger');
+
+// Get all plugins
+const allPlugins = uploader.plugins.getAll();
+
+// Clear all
+await uploader.plugins.clear();
 ```
 
 ## Plugin Override Behavior
 
-When registering plugins with the same name, **the last one wins**:
+When registering plugins with the same name, the last one wins:
 
 ```typescript
 // First version
@@ -74,94 +199,4 @@ await uploader.use(createPlugin('analytics', {
     return result;
   },
 }));
-
-// Only v2 analytics runs - v1 was replaced
-```
-
-## Plugin Examples
-
-### Validation Plugin
-
-```typescript
-const validationPlugin = createPlugin('validation', {
-  beforeUpload: async (file, options) => {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    
-    if (file instanceof Buffer && file.length > maxSize) {
-      throw new Error(`File too large (max ${maxSize} bytes)`);
-    }
-    
-    if (file instanceof File && file.size > maxSize) {
-      throw new Error(`File too large (max ${maxSize} bytes)`);
-    }
-    
-    return { file, options };
-  },
-});
-```
-
-### Auto-Folder Plugin
-
-```typescript
-const autoFolderPlugin = createPlugin('auto-folder', {
-  beforeUpload: async (file, options) => {
-    const date = new Date();
-    const folder = `${date.getFullYear()}/${date.getMonth() + 1}`;
-    
-    return {
-      file,
-      options: { ...options, folder },
-    };
-  },
-});
-```
-
-### Metadata Enrichment Plugin
-
-```typescript
-const metadataPlugin = createPlugin('metadata', {
-  afterUpload: async (result) => {
-    return {
-      ...result,
-      metadata: {
-        ...result.metadata,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: getCurrentUser().id,
-      },
-    };
-  },
-});
-```
-
-## Plugin Lifecycle
-
-```typescript
-interface FluxMediaPlugin {
-  name: string;
-  version?: string;
-  hooks: PluginHooks;
-  init?: () => Promise<void> | void;    // Called on register
-  destroy?: () => Promise<void> | void; // Called on unregister/override
-}
-```
-
-## Plugin Manager API
-
-Access the plugin manager directly:
-
-```typescript
-// Check if plugin exists
-uploader.plugins.has('logger');
-
-// Get a plugin
-const plugin = uploader.plugins.get('logger');
-
-// Unregister
-await uploader.plugins.unregister('logger');
-
-// Get all plugins
-const allPlugins = uploader.plugins.getAll();
-
-// Clear all
-await uploader.plugins.clear();
 ```

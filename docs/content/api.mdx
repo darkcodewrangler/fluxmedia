@@ -48,10 +48,16 @@ getUrl(id: string, transform?: TransformationOptions): string
 
 #### uploadMultiple(files, options?)
 
-Upload multiple files.
+Upload multiple files with concurrency control.
 
 ```typescript
-async uploadMultiple(files: File[] | Buffer[], options?: UploadOptions): Promise<UploadResult[]>
+async uploadMultiple(
+  files: File[] | Buffer[], 
+  options?: UploadOptions & {
+    concurrency?: number;
+    onBatchProgress?: (completed: number, total: number) => void;
+  }
+): Promise<UploadResult[]>
 ```
 
 #### deleteMultiple(ids)
@@ -92,6 +98,7 @@ interface UploadOptions {
   metadata?: Record<string, unknown>;
   transformation?: TransformationOptions;
   onProgress?: (percent: number) => void;
+  uniqueFilename?: boolean;  // Generate unique names (default: true)
 }
 ```
 
@@ -119,10 +126,8 @@ interface TransformationOptions {
   width?: number;
   height?: number;
   fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
-  quality?: number | 'auto';
+  quality?: number;
   format?: 'auto' | 'webp' | 'avif' | 'jpg' | 'png';
-  blur?: number;
-  rotate?: number;
 }
 ```
 
@@ -174,6 +179,45 @@ interface ProviderFeatures {
 
 ---
 
+## File Type Detection
+
+Detect file types using magic bytes (more reliable than extensions).
+
+### getFileType(buffer)
+
+```typescript
+import { getFileType } from '@fluxmedia/core';
+
+const type = await getFileType(buffer);
+console.log(type); // { mime: 'image/jpeg', ext: 'jpg' }
+```
+
+### getFileTypeFromStream(stream)
+
+For large files without loading into memory:
+
+```typescript
+import { getFileTypeFromStream } from '@fluxmedia/core';
+
+const type = await getFileTypeFromStream(readableStream);
+```
+
+### Helper Functions
+
+```typescript
+import { isImage, isVideo } from '@fluxmedia/core';
+
+if (await isImage(buffer)) {
+  // Handle image
+}
+
+if (await isVideo(buffer)) {
+  // Handle video
+}
+```
+
+---
+
 ## Errors
 
 ### MediaError
@@ -182,7 +226,8 @@ interface ProviderFeatures {
 class MediaError extends Error {
   code: MediaErrorCode;
   provider: string;
-  originalError?: Error;
+  originalError?: unknown;
+  details?: Record<string, unknown>;
 }
 ```
 
@@ -190,14 +235,28 @@ class MediaError extends Error {
 
 ```typescript
 enum MediaErrorCode {
+  // Upload errors
   UPLOAD_FAILED = 'UPLOAD_FAILED',
-  DELETE_FAILED = 'DELETE_FAILED',
-  FILE_NOT_FOUND = 'FILE_NOT_FOUND',
-  INVALID_FILE = 'INVALID_FILE',
-  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  FILE_TOO_LARGE = 'FILE_TOO_LARGE',
+  INVALID_FILE_TYPE = 'INVALID_FILE_TYPE',
   NETWORK_ERROR = 'NETWORK_ERROR',
-  TIMEOUT = 'TIMEOUT',
+
+  // Authentication errors
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
   UNAUTHORIZED = 'UNAUTHORIZED',
+
+  // Provider errors
+  PROVIDER_ERROR = 'PROVIDER_ERROR',
+  RATE_LIMITED = 'RATE_LIMITED',
+  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
+
+  // Configuration errors
+  INVALID_CONFIG = 'INVALID_CONFIG',
+  MISSING_CREDENTIALS = 'MISSING_CREDENTIALS',
+
+  // File errors
+  FILE_NOT_FOUND = 'FILE_NOT_FOUND',
+  DELETE_FAILED = 'DELETE_FAILED',
 }
 ```
 
