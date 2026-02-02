@@ -2,6 +2,7 @@
  * File Validation Plugin for FluxMedia
  *
  * Validates files before upload based on type, size, and extension.
+ * Uses magic byte detection for reliable MIME type checking.
  */
 
 import {
@@ -9,6 +10,7 @@ import {
     type UploadOptions,
     MediaError,
     MediaErrorCode,
+    getFileType,
 } from '@fluxmedia/core';
 
 /**
@@ -43,6 +45,8 @@ export interface FileValidationOptions {
     customValidator?: (file: File | Buffer, filename: string) => Promise<boolean> | boolean;
     /** Callback when validation fails */
     onValidationFailed?: (error: ValidationError) => void;
+    /** Use magic byte detection for MIME type (default: true for Buffer, false for File) */
+    useMagicBytes?: boolean;
 }
 
 /**
@@ -59,18 +63,44 @@ function formatBytes(bytes: number): string {
 }
 
 /**
+ * Get file buffer from File or Buffer
+ */
+async function getBuffer(file: File | Buffer): Promise<Buffer> {
+    if (file instanceof Buffer) {
+        return file;
+    }
+    const buffer = Buffer.from(await (file as File).arrayBuffer());
+    return buffer;
+}
+
+/**
  * Get file information from File or Buffer
  */
-function getFileInfo(
+async function getFileInfo(
     file: File | Buffer,
-    options: UploadOptions
-): { size: number; name: string; type: string; ext: string } {
+    options: UploadOptions,
+    useMagicBytes: boolean
+): Promise<{ size: number; name: string; type: string; ext: string }> {
     const isFile = typeof File !== 'undefined' && file instanceof File;
 
     const size = isFile ? (file as File).size : (file as Buffer).byteLength;
     const name = isFile ? (file as File).name : options.filename || 'unknown';
-    const type = isFile ? (file as File).type : '';
-    const ext = name.includes('.') ? name.substring(name.lastIndexOf('.')).toLowerCase() : '';
+    let type = isFile ? (file as File).type : '';
+    let ext = name.includes('.') ? name.substring(name.lastIndexOf('.')).toLowerCase() : '';
+
+    // Use magic byte detection for more reliable type checking
+    if (useMagicBytes || file instanceof Buffer) {
+        try {
+            const buffer = await getBuffer(file);
+            const detected = await getFileType(buffer);
+            if (detected) {
+                type = detected.mime;
+                ext = '.' + detected.ext;
+            }
+        } catch {
+            // Fall back to extension/browser type on error
+        }
+    }
 
     return { size, name, type, ext };
 }
@@ -87,12 +117,15 @@ function getFileInfo(
  *   allowedTypes: ['image/*', 'video/mp4'],
  *   maxSize: 10 * 1024 * 1024, // 10MB
  *   blockedExtensions: ['.exe', '.bat'],
+ *   useMagicBytes: true, // Use magic byte detection
  * });
  * ```
  */
 export function createFileValidationPlugin(
     options: FileValidationOptions = {}
 ): FluxMediaPlugin {
+    const useMagicBytes = options.useMagicBytes ?? false;
+
     return {
         name: 'file-validation',
         version: '1.0.0',
@@ -101,7 +134,7 @@ export function createFileValidationPlugin(
                 file: File | Buffer,
                 uploadOptions: UploadOptions
             ): Promise<{ file: File | Buffer; options: UploadOptions }> {
-                const { size: fileSize, name: fileName, type: fileType, ext: fileExt } = getFileInfo(file, uploadOptions);
+                const { size: fileSize, name: fileName, type: fileType, ext: fileExt } = await getFileInfo(file, uploadOptions, useMagicBytes);
 
                 // Validate max file size
                 if (options.maxSize && fileSize > options.maxSize) {

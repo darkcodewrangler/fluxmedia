@@ -245,9 +245,6 @@ importers:
       '@fluxmedia/core':
         specifier: workspace:*
         version: link:../core
-      file-type:
-        specifier: ^21.3.0
-        version: 21.3.0
     devDependencies:
       '@types/react':
         specifier: ^18.2.48

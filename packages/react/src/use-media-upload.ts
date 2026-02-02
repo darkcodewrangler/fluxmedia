@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { UploadResult } from '@fluxmedia/core';
+
+import { getFileType, type UploadResult } from '@fluxmedia/core';
 import type { UseMediaUploadConfig, UseMediaUploadReturn } from './types';
 
 /**
@@ -74,10 +75,9 @@ export function useMediaUpload(config: UseMediaUploadConfig): UseMediaUploadRetu
      */
     const detectFileType = useCallback(async (file: File) => {
         try {
-            // Dynamic import for tree-shaking
-            const { fileTypeFromBuffer } = await import('file-type');
-            const buffer = await file.arrayBuffer();
-            const result = await fileTypeFromBuffer(new Uint8Array(buffer));
+
+            const buffer = Buffer.from(await file.arrayBuffer());
+            const result = await getFileType(buffer);
 
             if (result) {
                 const typeResult = { mime: result.mime, ext: result.ext };
