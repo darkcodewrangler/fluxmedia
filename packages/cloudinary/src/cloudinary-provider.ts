@@ -110,7 +110,7 @@ export class CloudinaryProvider implements MediaProvider {
             api_secret: this.config.apiSecret,
             secure: this.config.secure,
         });
-        this.client = cloudinary as unknown as CloudinaryClient;
+        this.client = cloudinary;
         return this.client;
     }
 
@@ -290,9 +290,14 @@ export class CloudinaryProvider implements MediaProvider {
         }
     }
 
-    get native(): unknown {
+    /**
+     * Access to the native Cloudinary SDK client.
+     * Returns the full cloudinary.v2 SDK with all methods and types.
+     */
+    get native(): CloudinaryClient | null {
         return this.client;
     }
+
 
     /**
      * Issue #5: Map Cloudinary-specific errors to appropriate MediaErrorCodes

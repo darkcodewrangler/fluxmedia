@@ -58,29 +58,7 @@ export interface CloudinaryUploadResponse {
 }
 
 /**
- * Interface for the Cloudinary SDK client.
- * Provides type safety for SDK method calls.
+ * Type alias for the Cloudinary SDK v2 client.
+ * Uses the actual SDK type for full type safety and native access.
  */
-export interface CloudinaryClient {
-    uploader: {
-        upload(
-            file: string | Buffer,
-            options?: CloudinaryUploadOptions
-        ): Promise<CloudinaryUploadResponse>;
-        destroy(
-            publicId: string,
-            options?: { resource_type?: string }
-        ): Promise<{ result: string }>;
-        explicit(
-            publicId: string,
-            options?: { type?: string }
-        ): Promise<CloudinaryUploadResponse>;
-    };
-    url(publicId: string, options?: Record<string, unknown>): string;
-    config(options: {
-        cloud_name: string;
-        api_key: string;
-        api_secret: string;
-        secure: boolean;
-    }): void;
-}
+export type CloudinaryClient = typeof import('cloudinary').v2;

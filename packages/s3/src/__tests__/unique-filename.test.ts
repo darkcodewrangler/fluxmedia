@@ -38,7 +38,9 @@ describe('S3Provider Unique Filename', () => {
 
         // Keys should be different (unique suffix)
         expect(key1).not.toBe(key2);
-        expect(key1).toMatch(/^avatar-[a-z0-9]{6}$/);
+        // Accepts 8-12 alphanumeric chars for crypto/timestamp-based ID
+        expect(key1).toMatch(/^avatar-[a-z0-9]{8,12}$/);
+
     });
 
     it('should use exact filename when uniqueFilename is false', async () => {

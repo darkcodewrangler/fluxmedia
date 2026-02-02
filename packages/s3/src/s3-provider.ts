@@ -57,7 +57,7 @@ export class S3Provider implements MediaProvider {
 
   private client: S3ClientType | null = null;
   private clientPromise: Promise<S3ClientType> | null = null;
-  private config: S3Config;
+  private config!: S3Config;
 
   constructor(config: S3Config) {
     // Validate required fields
@@ -81,7 +81,24 @@ export class S3Provider implements MediaProvider {
       );
     }
 
-    this.config = config;
+    // Store config in non-enumerable property to prevent credential exposure
+    Object.defineProperty(this, 'config', {
+      value: config,
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    });
+  }
+
+  /**
+   * Get safe config info for debugging (no secrets)
+   */
+  getConfigInfo() {
+    return {
+      bucket: this.config.bucket,
+      region: this.config.region,
+      endpoint: this.config.endpoint,
+    };
   }
 
   /**
@@ -216,22 +233,30 @@ export class S3Provider implements MediaProvider {
 
   async uploadMultiple(
     files: File[] | Buffer[],
-    options?: UploadOptions & { concurrency?: number }
+    options?: UploadOptions & {
+      concurrency?: number;
+      onBatchProgress?: (completed: number, total: number) => void;
+    }
   ): Promise<UploadResult[]> {
     // Batched processing with concurrency control
     const concurrency = options?.concurrency ?? 5;
     const results: UploadResult[] = [];
+    let completedCount = 0;
 
     for (let i = 0; i < files.length; i += concurrency) {
       const batch = files.slice(i, i + concurrency);
       const batchResults = await Promise.all(
         batch.map((file) => {
           // Clone options for each file to avoid shared state
-          const { concurrency: _, ...uploadOptions } = options ?? {};
+          const { concurrency: _, onBatchProgress: __, ...uploadOptions } = options ?? {};
           return this.upload(
             file,
             Object.keys(uploadOptions).length > 0 ? uploadOptions : undefined
-          );
+          ).then((result) => {
+            completedCount++;
+            options?.onBatchProgress?.(completedCount, files.length);
+            return result;
+          });
         })
       );
       results.push(...batchResults);
@@ -239,6 +264,7 @@ export class S3Provider implements MediaProvider {
 
     return results;
   }
+
 
   async deleteMultiple(ids: string[]): Promise<void> {
     // Batched processing with concurrency control
@@ -271,7 +297,11 @@ export class S3Provider implements MediaProvider {
     }
   }
 
-  get native(): unknown {
+  /**
+   * Access to the native AWS S3 client.
+   * Returns the full S3Client with all methods and types.
+   */
+  get native(): S3ClientType | null {
     return this.client;
   }
 
@@ -299,7 +329,20 @@ export class S3Provider implements MediaProvider {
   }
 
   private generateShortId(): string {
-    return Math.random().toString(36).substring(2, 8);
+    // Use Web Crypto API for better randomness when available
+    const cryptoObj = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined;
+    if (cryptoObj?.getRandomValues) {
+      const buffer = new Uint8Array(6);
+      cryptoObj.getRandomValues(buffer);
+      return Array.from(buffer)
+        .map((b) => b.toString(36).padStart(2, '0'))
+        .join('')
+        .substring(0, 8);
+    }
+    // Fallback with timestamp for better uniqueness
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    return `${timestamp}${random}`.substring(0, 12);
   }
 
   private async getContentType(file: File | Buffer): Promise<{ contentType: string, extension: string }> {
@@ -330,8 +373,10 @@ export class S3Provider implements MediaProvider {
    * Maps S3-specific errors to MediaError with appropriate codes
    */
   private mapS3Error(error: unknown, defaultCode: MediaErrorCode): never {
-    const err = error as { name?: string; message?: string };
+    const err = error as { name?: string; message?: string; $metadata?: { httpStatusCode?: number } };
+    const httpCode = err.$metadata?.httpStatusCode;
 
+    // Bucket errors
     if (err.name === 'NoSuchBucket') {
       throw createMediaError(
         MediaErrorCode.INVALID_CONFIG,
@@ -340,7 +385,8 @@ export class S3Provider implements MediaProvider {
       );
     }
 
-    if (err.name === 'AccessDenied' || err.name === 'InvalidAccessKeyId') {
+    // Authentication/authorization errors
+    if (err.name === 'AccessDenied' || err.name === 'InvalidAccessKeyId' || httpCode === 403) {
       throw createMediaError(
         MediaErrorCode.UNAUTHORIZED,
         this.name,
@@ -348,8 +394,49 @@ export class S3Provider implements MediaProvider {
       );
     }
 
-    if (err.name === 'NoSuchKey') {
+    // Invalid credentials
+    if (err.name === 'SignatureDoesNotMatch' || httpCode === 401) {
+      throw createMediaError(
+        MediaErrorCode.INVALID_CREDENTIALS,
+        this.name,
+        new Error('Invalid AWS credentials - check accessKeyId and secretAccessKey')
+      );
+    }
+
+    // Not found errors
+    if (err.name === 'NoSuchKey' || httpCode === 404) {
       throw createMediaError(MediaErrorCode.FILE_NOT_FOUND, this.name, error);
+    }
+
+    // Throttling/rate limiting
+    if (err.name === 'SlowDown' || err.name === 'ServiceUnavailable' || httpCode === 503) {
+      throw createMediaError(
+        MediaErrorCode.NETWORK_ERROR,
+        this.name,
+        new Error('AWS S3 service temporarily unavailable or rate limited - try again later')
+      );
+    }
+
+    // Network/timeout errors
+    if (
+      err.name === 'TimeoutError' ||
+      err.message?.includes('ETIMEDOUT') ||
+      err.message?.includes('ECONNRESET')
+    ) {
+      throw createMediaError(
+        MediaErrorCode.NETWORK_ERROR,
+        this.name,
+        new Error('Network timeout - check connection or try smaller file')
+      );
+    }
+
+    // File size errors
+    if (err.name === 'EntityTooLarge' || httpCode === 413) {
+      throw createMediaError(
+        MediaErrorCode.FILE_TOO_LARGE,
+        this.name,
+        new Error('File exceeds maximum allowed size')
+      );
     }
 
     throw createMediaError(defaultCode, this.name, error);
