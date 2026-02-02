@@ -2,6 +2,7 @@
   "name": "fluxmedia",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Switch providers, not code - A TypeScript-first media library for uploading to Cloudinary, S3, R2, and more",
   "repository": {
     "type": "git",
@@ -18,7 +19,7 @@
     "clean": "pnpm -r run clean",
     "dev": "pnpm -r run dev",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
@@ -28,21 +29,22 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
-    "@types/node": "^20.11.5",
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^22.19.4",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
-    "tsdown": "^0.11.1",
+    "tsdown": "^0.20.1",
     "tsup": "^8.5.1",
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@8.15.1",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=21.0.0",
     "pnpm": ">=8.0.0"
   }
 }

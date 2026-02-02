@@ -40,9 +40,9 @@
         "!dist/**/*.map"
     ],
     "scripts": {
-        "build": "tsdown",
+        "build": "tsup",
         "clean": "rm -rf dist",
-        "dev": "tsdown --watch"
+        "dev": "tsup --watch"
     },
     "dependencies": {
         "@fluxmedia/core": "workspace:*",
@@ -61,6 +61,6 @@
         "access": "public"
     },
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=21.0.0"
     }
 }

@@ -75,7 +75,7 @@ export class MediaError extends Error {
         this.code = code;
         this.provider = provider;
         this.originalError = originalError;
-        this.details = details;
+        this.details = details as Record<string, unknown>;
 
         // Maintains proper stack trace for where our error was thrown (only available on V8)
         if (Error.captureStackTrace) {

@@ -9,7 +9,6 @@ export default defineConfig({
     platform: 'node',
     treeshake: true,
     external: [
-        'vitest',
         'stream',
         'file-type',
         'load-esm',

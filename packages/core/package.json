@@ -50,9 +50,9 @@
         "!dist/**/*.map"
     ],
     "scripts": {
-        "build": "tsdown",
+        "build": "tsup",
         "clean": "rm -rf dist",
-        "dev": "tsdown --watch",
+        "dev": "tsup --watch",
         "test": "vitest",
         "test:coverage": "vitest --coverage"
     },
@@ -65,7 +65,7 @@
         "access": "public"
     },
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=21.0.0"
     },
     "dependencies": {
         "file-type": "^21.3.0",

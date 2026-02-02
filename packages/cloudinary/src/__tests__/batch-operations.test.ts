@@ -161,7 +161,7 @@ describe('CloudinaryProvider Unique Filename', () => {
         await provider.upload(file, { filename: 'avatar', uniqueFilename: false });
 
         const cloudinary = await import('cloudinary');
-        const callArgs = (cloudinary.v2.uploader.upload as ReturnType<typeof vi.fn>).mock.calls[0];
+        const callArgs = (cloudinary.v2.uploader.upload as ReturnType<typeof vi.fn>).mock.calls.at(-1);
         const options = callArgs?.[1];
 
         // Should use exact filename
