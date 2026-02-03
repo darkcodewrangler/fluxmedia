@@ -81,17 +81,23 @@ const plugin = createMetadataExtractionPlugin({
 
 ### Analytics
 
-Logs and tracks upload operations.
+Logs and tracks upload operations with **strongly-typed events**.
 
 ```typescript
-import { createAnalyticsPlugin } from '@fluxmedia/plugins';
+import { createAnalyticsPlugin, type TrackFunction } from '@fluxmedia/plugins';
 
 const plugin = createAnalyticsPlugin({
   environment: 'production',
   logLevel: 'info',
-  track: (event, data) => myAnalytics.track(event, data),
+  // Typed track function - TypeScript verifies event/data match
+  track: (event, data) => {
+    // event: 'media.upload.started' | 'media.upload.completed' | 'media.delete.completed' | 'media.error'
+    myAnalytics.track(event, data);
+  },
 });
 ```
+
+**Event Types:** `media.upload.started`, `media.upload.completed`, `media.delete.completed`, `media.error`
 
 ### Retry
 

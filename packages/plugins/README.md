@@ -134,18 +134,24 @@ console.log(result.metadata.extracted);
 
 ### Analytics/Logging
 
-Logs and tracks upload operations with environment-aware behavior.
+Logs and tracks upload operations with environment-aware behavior and **strongly-typed events**.
 
 ```typescript
-import { createAnalyticsPlugin } from '@fluxmedia/plugins';
+import { 
+  createAnalyticsPlugin,
+  type TrackFunction,
+  type AnalyticsEventType 
+} from '@fluxmedia/plugins';
 
 const plugin = createAnalyticsPlugin({
   environment: 'production',
   logLevel: 'info',
   console: true,
   trackPerformance: true,
+  // Typed track function - TypeScript verifies event/data match
   track: (event, data) => {
-    // Send to your analytics service
+    // event: 'media.upload.started' | 'media.upload.completed' | 'media.delete.completed' | 'media.error'
+    // data: typed based on event type
     myAnalytics.track(event, data);
   },
   onUploadStart: (file, options) => {
@@ -163,18 +169,26 @@ const plugin = createAnalyticsPlugin({
 });
 ```
 
+**Event Types:**
+| Event                    | Data Type                  | Description                                            |
+| ------------------------ | -------------------------- | ------------------------------------------------------ |
+| `media.upload.started`   | `UploadStartedEventData`   | fileName, fileSize, folder, uploadId                   |
+| `media.upload.completed` | `UploadCompletedEventData` | fileId, fileName, fileSize, format, provider, duration |
+| `media.delete.completed` | `DeleteCompletedEventData` | fileId                                                 |
+| `media.error`            | `ErrorEventData`           | operation, error, totalErrors                          |
+
 **Options:**
-| Option             | Type       | Description                                   |
-| ------------------ | ---------- | --------------------------------------------- |
-| `environment`      | `string`   | 'development', 'production', 'test', or 'all' |
-| `logLevel`         | `string`   | 'none', 'error', 'warn', 'info', or 'debug'   |
-| `console`          | `boolean`  | Enable console logging (default: true)        |
-| `trackPerformance` | `boolean`  | Track upload duration (default: true)         |
-| `track`            | `function` | Custom tracking callback                      |
-| `onUploadStart`    | `function` | Called when upload starts                     |
-| `onUploadComplete` | `function` | Called when upload completes                  |
-| `onUploadError`    | `function` | Called on upload error                        |
-| `onDelete`         | `function` | Called when file is deleted                   |
+| Option             | Type            | Description                                   |
+| ------------------ | --------------- | --------------------------------------------- |
+| `environment`      | `string`        | 'development', 'production', 'test', or 'all' |
+| `logLevel`         | `string`        | 'none', 'error', 'warn', 'info', or 'debug'   |
+| `console`          | `boolean`       | Enable console logging (default: true)        |
+| `trackPerformance` | `boolean`       | Track upload duration (default: true)         |
+| `track`            | `TrackFunction` | Typed tracking callback                       |
+| `onUploadStart`    | `function`      | Called when upload starts                     |
+| `onUploadComplete` | `function`      | Called when upload completes                  |
+| `onUploadError`    | `function`      | Called on upload error                        |
+| `onDelete`         | `function`      | Called when file is deleted                   |
 
 ### Retry
 

@@ -21,6 +21,76 @@ export type LogLevel = 'none' | 'error' | 'warn' | 'info' | 'debug';
 export type Environment = 'development' | 'production' | 'test' | 'all';
 
 /**
+ * Analytics event types
+ */
+export type AnalyticsEventType =
+    | 'media.upload.started'
+    | 'media.upload.completed'
+    | 'media.delete.completed'
+    | 'media.error';
+
+/**
+ * Data payload for upload started event
+ */
+export interface UploadStartedEventData {
+    fileName: string;
+    fileSize: number;
+    folder?: string | undefined;
+    uploadId: string;
+}
+
+/**
+ * Data payload for upload completed event
+ */
+export interface UploadCompletedEventData {
+    fileId: string;
+    fileName: string;
+    fileSize: number;
+    format: string;
+    provider: string;
+    duration: number;
+    totalUploads: number;
+    totalSize: number;
+}
+
+/**
+ * Data payload for delete completed event
+ */
+export interface DeleteCompletedEventData {
+    fileId: string;
+}
+
+/**
+ * Data payload for error event
+ */
+export interface ErrorEventData {
+    operation: 'upload' | 'delete' | 'get';
+    error: {
+        message: string;
+        name: string;
+    };
+    totalErrors: number;
+}
+
+/**
+ * Map of event types to their data payloads
+ */
+export interface AnalyticsEventMap {
+    'media.upload.started': UploadStartedEventData;
+    'media.upload.completed': UploadCompletedEventData;
+    'media.delete.completed': DeleteCompletedEventData;
+    'media.error': ErrorEventData;
+}
+
+/**
+ * Typed track function signature
+ */
+export type TrackFunction = <T extends AnalyticsEventType>(
+    event: T,
+    data: AnalyticsEventMap[T]
+) => void;
+
+/**
  * Options for the analytics plugin
  */
 export interface AnalyticsOptions {
@@ -36,8 +106,8 @@ export interface AnalyticsOptions {
     onUploadError?: (error: Error, file: File | Buffer) => void;
     /** Callback when file is deleted */
     onDelete?: (id: string) => void;
-    /** Generic tracking function */
-    track?: (event: string, data: Record<string, unknown>) => void;
+    /** Generic tracking function with typed events */
+    track?: TrackFunction;
     /** Enable performance tracking (default: true) */
     trackPerformance?: boolean;
     /** Enable console logging (default: true) */
@@ -126,7 +196,7 @@ export function createAnalyticsPlugin(options: AnalyticsOptions = {}): FluxMedia
         }
     };
 
-    const track = (event: string, data: Record<string, unknown>): void => {
+    const track: TrackFunction = <T extends AnalyticsEventType>(event: T, data: AnalyticsEventMap[T]): void => {
         if (config.track) {
             config.track(event, data);
         }

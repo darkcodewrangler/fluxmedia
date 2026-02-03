@@ -288,3 +288,60 @@ interface PluginHooks {
   beforeGetUrl?: (id, transform?) => Promise<{ id, transform? } | void>;
 }
 ```
+
+---
+
+## Analytics Event Types
+
+Typed events for the analytics plugin.
+
+### AnalyticsEventType
+
+```typescript
+type AnalyticsEventType =
+  | 'media.upload.started'
+  | 'media.upload.completed'
+  | 'media.delete.completed'
+  | 'media.error';
+```
+
+### TrackFunction
+
+```typescript
+type TrackFunction = <T extends AnalyticsEventType>(
+  event: T,
+  data: AnalyticsEventMap[T]
+) => void;
+```
+
+### Event Data Types
+
+```typescript
+interface UploadStartedEventData {
+  fileName: string;
+  fileSize: number;
+  folder?: string;
+  uploadId: string;
+}
+
+interface UploadCompletedEventData {
+  fileId: string;
+  fileName: string;
+  fileSize: number;
+  format: string;
+  provider: string;
+  duration: number;
+  totalUploads: number;
+  totalSize: number;
+}
+
+interface DeleteCompletedEventData {
+  fileId: string;
+}
+
+interface ErrorEventData {
+  operation: 'upload' | 'delete' | 'get';
+  error: { message: string; name: string };
+  totalErrors: number;
+}
+```

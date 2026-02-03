@@ -33,6 +33,13 @@ export {
     type AnalyticsOptions,
     type LogLevel,
     type Environment,
+    type AnalyticsEventType,
+    type AnalyticsEventMap,
+    type TrackFunction,
+    type UploadStartedEventData,
+    type UploadCompletedEventData,
+    type DeleteCompletedEventData,
+    type ErrorEventData,
 } from './analytics';
 
 // Retry Plugin
