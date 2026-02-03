@@ -1,6 +1,6 @@
 {
     "name": "@fluxmedia/r2",
-    "version": "0.1.0-alpha.0",
+    "version": "0.1.0",
     "description": "Cloudflare R2 provider for FluxMedia",
     "keywords": [
         "fluxmedia",

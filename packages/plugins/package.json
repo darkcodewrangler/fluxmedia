@@ -1,6 +1,6 @@
 {
     "name": "@fluxmedia/plugins",
-    "version": "0.1.0-alpha.0",
+    "version": "0.1.0",
     "description": "Official plugins for FluxMedia - validation, optimization, analytics, and more",
     "keywords": [
         "fluxmedia",
