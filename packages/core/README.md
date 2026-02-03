@@ -22,7 +22,7 @@ const uploader = new MediaUploader(
     apiKey: 'your-key',
     apiSecret: 'your-secret'
   })
-);s
+);
 
 // Upload a file
 const result = await uploader.upload(file, {
@@ -32,6 +32,10 @@ const result = await uploader.upload(file, {
     height: 400,
     fit: 'cover',
     format: 'webp'
+  },
+  metadata: {
+    userId: '12345',
+    uploadedAt: new Date().toISOString()
   }
 });
 

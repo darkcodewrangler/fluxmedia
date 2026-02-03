@@ -17,7 +17,7 @@ pnpm add sharp
 import { MediaUploader } from '@fluxmedia/core';
 import { 
   createFileValidationPlugin,
-  createRetryPlugin 
+  createAnalyticsPlugin 
 } from '@fluxmedia/plugins';
 
 const uploader = new MediaUploader(provider);
@@ -28,8 +28,8 @@ await uploader.use(createFileValidationPlugin({
   allowedTypes: ['image/*']
 }));
 
-await uploader.use(createRetryPlugin({
-  maxRetries: 3
+await uploader.use(createAnalyticsPlugin({
+  logLevel: 'info'
 }));
 ```
 
@@ -46,6 +46,7 @@ const plugin = createFileValidationPlugin({
   allowedTypes: ['image/*', 'video/mp4'],
   maxSize: 10 * 1024 * 1024, // 10MB
   blockedExtensions: ['.exe', '.bat'],
+  useMagicBytes: true,
 });
 ```
 
@@ -59,7 +60,7 @@ import { createImageOptimizationPlugin } from '@fluxmedia/plugins';
 const plugin = createImageOptimizationPlugin({
   maxWidth: 2000,
   maxHeight: 2000,
-  quality: 85,
+  quality: 0.85,
   format: 'webp',
 });
 ```
@@ -94,22 +95,25 @@ const plugin = createAnalyticsPlugin({
 
 ### Retry
 
-Automatic retry with exponential backoff.
+Provides automatic retry with exponential backoff. Use `createRetryPlugin` with `withRetry`:
 
 ```typescript
-import { createRetryPlugin, withRetry } from '@fluxmedia/plugins';
+import { createRetryPlugin, withRetry, getRetryConfig } from '@fluxmedia/plugins';
 
-// As a plugin
-const plugin = createRetryPlugin({
+// 1. Add retry plugin to store configuration
+await uploader.use(createRetryPlugin({
   maxRetries: 3,
-  initialDelay: 1000,
+  retryDelay: 1000,
   exponentialBackoff: true,
-});
+  onRetry: (attempt, error, delay) => {
+    console.log(`Retry ${attempt} after ${delay}ms`);
+  }
+}));
 
-// Or wrap any function
+// 2. Use withRetry for automatic retry logic
 const result = await withRetry(
   () => uploader.upload(file),
-  { maxRetries: 3 }
+  { maxRetries: 3, exponentialBackoff: true }
 );
 ```
 

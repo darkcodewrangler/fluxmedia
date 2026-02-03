@@ -1,6 +1,6 @@
 # @fluxmedia/cloudinary
 
-Cloudinary provider for FluxMedia - full-featured media management with on-the-fly transformations.
+Cloudinary provider for FluxMedia - full-featured media management with on-the-fly transformations, AI tagging, and more.
 
 ## Installation
 
@@ -58,7 +58,31 @@ interface CloudinaryConfig {
 }
 ```
 
-## Upload with Transformations
+## Advanced Usage
+
+### Access Native Cloudinary Client
+
+```typescript
+const cloudinary = uploader.provider.native;
+
+// Use Cloudinary-specific features
+await cloudinary.uploader.explicit('sample', {
+  type: 'upload',
+  eager: [{ effect: 'sepia' }]
+});
+```
+
+### Check Feature Support
+
+```typescript
+if (uploader.supports('transformations.blur')) {
+  // Cloudinary supports blur
+}
+```
+
+## Examples
+
+### Upload with tags
 
 ```typescript
 const result = await uploader.upload(file, {
@@ -70,6 +94,9 @@ const result = await uploader.upload(file, {
     fit: 'cover',
     quality: 80,
     format: 'webp'
+  },  metadata: {
+    userId: '12345',
+    uploadedAt: new Date().toISOString()
   }
 });
 ```

@@ -178,29 +178,30 @@ const plugin = createAnalyticsPlugin({
 
 ### Retry
 
-Provides retry configuration and a utility function for automatic retries with exponential backoff.
+Provides automatic retry with exponential backoff. The plugin stores configuration and `withRetry` implements the retry logic.
 
 ```typescript
-import { createRetryPlugin, withRetry } from '@fluxmedia/plugins';
+import { createRetryPlugin, withRetry, getRetryConfig } from '@fluxmedia/plugins';
 
-// Option 1: Use withRetry utility (recommended)
-const result = await withRetry(
-  () => uploader.upload(file),
-  {
-    maxRetries: 3,
-    retryDelay: 1000,
-    exponentialBackoff: true,
-    onRetry: (attempt, error, delay) => {
-      console.log(`Retry ${attempt} after ${delay}ms: ${error.message}`);
-    }
-  }
-);
-
-// Option 2: Plugin stores config in metadata for custom retry logic
+// 1. Add retry plugin to configure retry behavior
 await uploader.use(createRetryPlugin({
   maxRetries: 3,
+  retryDelay: 1000,
   exponentialBackoff: true,
+  onRetry: (attempt, error, delay) => {
+    console.log(`Retry ${attempt} after ${delay}ms: ${error.message}`);
+  }
 }));
+
+// 2. Use withRetry to wrap upload with retry logic
+const result = await withRetry(
+  () => uploader.upload(file),
+  { maxRetries: 3, exponentialBackoff: true }
+);
+
+// Or retrieve stored config using getRetryConfig
+const options = { folder: 'uploads' };
+const retryConfig = getRetryConfig(options);
 ```
 
 **Options:**
