@@ -1,12 +1,55 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot" // Wait, I didn't install @radix-ui/react-slot specifically, I installed radix-ui. I should check if it works or remove Slot support for now. I'll code assuming standard HTML button if Slot is missing, but Slot is good for polymorphism. I'll rely on it being available or remove it if I errored. Actually, I better install it explicitly to be safe or use simple button. I'll stick to simple button for MVP to avoid confusion, or install it. I'll assume simple button for now.
+import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-// I need class-variance-authority. I forgot to install it.
-// I will install it in the next step or mock it.
-// Actually, I can write the button without CVA for now to handle simple variants manually, or install CVA.
-// Using standard CVA pattern is much better for shadcn-like feel.
-// I'll install `class-variance-authority` and `@radix-ui/react-slot` properly.
+const buttonVariants = cva(
+    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    {
+        variants: {
+            variant: {
+                default: "bg-primary text-primary-foreground hover:bg-primary/90",
+                destructive:
+                    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                outline:
+                    "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+                secondary:
+                    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                ghost: "hover:bg-accent hover:text-accent-foreground",
+                link: "text-primary underline-offset-4 hover:underline",
+            },
+            size: {
+                default: "h-10 px-4 py-2",
+                sm: "h-9 rounded-md px-3",
+                lg: "h-11 rounded-md px-8",
+                icon: "h-10 w-10",
+            },
+        },
+        defaultVariants: {
+            variant: "default",
+            size: "default",
+        },
+    }
+)
 
-// Let me pause writing this file and install dependencies first.
+export interface ButtonProps
+    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+    asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+    ({ className, variant, size, asChild = false, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button"
+        return (
+            <Comp
+                className={cn(buttonVariants({ variant, size, className }))}
+                ref={ref}
+                {...props}
+            />
+        )
+    }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }

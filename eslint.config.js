@@ -88,6 +88,7 @@ export default [
             '**/*.config.js',
             '**/examples/**',
             '**/docs/**',
+            '**/webapp/**',
         ],
     },
 ];
