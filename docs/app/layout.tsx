@@ -19,7 +19,7 @@ export const metadata = {
 const navbar = (
     <Navbar
         logo={<span style={{ fontWeight: 700, fontSize: '1.25rem' }}>FluxMedia</span>}
-        projectLink="https://github.com/fluxmediajs/fluxmedia"
+        projectLink="https://github.com/codewithveek/fluxmedia"
     />
 )
 
@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <Layout
                     navbar={navbar}
                     pageMap={await getPageMap()}
-                    docsRepositoryBase="https://github.com/fluxmediajs/fluxmedia/tree/main/docs"
+                    docsRepositoryBase="https://github.com/codewithveek/fluxmedia/tree/main/docs"
                     footer={footer}
                     sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
                     toc={{ backToTop: true }}
