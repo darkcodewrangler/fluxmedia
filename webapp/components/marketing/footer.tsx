@@ -3,7 +3,7 @@ import { UploadCloud } from "lucide-react";
 
 export function Footer() {
     return (
-        <footer className="border-t py-12 md:py-16 lg:py-20 bg-muted/30">
+        <footer className="border-t py-12 md:py-16 lg:py-20 bg-muted/30 px-3 md:px-5">
             <div className="container grid grid-cols-1 gap-8 md:grid-cols-4">
                 <div className="space-y-4">
                     <div className="flex items-center space-x-2">
