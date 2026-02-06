@@ -28,8 +28,13 @@ await client.send(command);`;
 
 // FluxMedia with plugins
 const PLUGIN_WAY = `// FluxMedia: With Plugins
-import { MediaUploader, createPlugin } from "@fluxmedia/core";
+import { MediaUploader } from "@fluxmedia/core";
 import { S3Provider } from "@fluxmedia/s3";
+import { 
+  fileValidationPlugin, 
+  loggerPlugin, 
+  retryPlugin 
+} from "@fluxmedia/plugins";
 
 const uploader = new MediaUploader(
   new S3Provider({
@@ -40,25 +45,14 @@ const uploader = new MediaUploader(
   })
 );
 
-// Add validation, logging, and auto-retry
-const validationPlugin = createPlugin("validator", {
-  beforeUpload: async (file, options) => {
-    if (file.size > 10 * 1024 * 1024) {
-      throw new Error("File too large");
-    }
-    return { file, options };
-  }
-});
+// Register official plugins
+await uploader.use(fileValidationPlugin({
+  maxSize: 10 * 1024 * 1024, // 10MB
+  allowedTypes: ["image/*", "video/*"]
+}));
 
-const loggerPlugin = createPlugin("logger", {
-  afterUpload: async (result) => {
-    console.log("Uploaded:", result.url);
-    return result;
-  }
-});
-
-await uploader.use(validationPlugin);
-await uploader.use(loggerPlugin);
+await uploader.use(loggerPlugin());
+await uploader.use(retryPlugin({ maxRetries: 3 }));
 
 // Same API for S3, R2, or Cloudinary!
 await uploader.upload(file, {
@@ -154,8 +148,8 @@ export function CodeComparison() {
                     <button
                         onClick={() => setActiveTab("plugins")}
                         className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${activeTab === "plugins"
-                                ? "bg-indigo-500 text-white"
-                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300"
+                            ? "bg-indigo-500 text-white"
+                            : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300"
                             }`}
                     >
                         With Plugins
@@ -163,8 +157,8 @@ export function CodeComparison() {
                     <button
                         onClick={() => setActiveTab("basic")}
                         className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${activeTab === "basic"
-                                ? "bg-indigo-500 text-white"
-                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300"
+                            ? "bg-indigo-500 text-white"
+                            : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300"
                             }`}
                     >
                         Basic Setup

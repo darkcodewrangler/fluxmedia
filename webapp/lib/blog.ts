@@ -1,12 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
+import { remark } from 'remark';
+import html from 'remark-html';
 import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeMermaid from 'rehype-mermaid';
-import rehypeStringify from 'rehype-stringify';
 import { codeToHtml } from 'shiki';
 
 const postsDirectory = path.join(process.cwd(), 'content/blog');
@@ -90,10 +87,10 @@ async function highlightCodeBlocks(htmlContent: string): Promise<string> {
     const codeBlockRegex = /<pre><code class="language-(\w+)">([\s\S]*?)<\/code><\/pre>/g;
 
     let result = htmlContent;
-    let match;
 
     // Find all code blocks and replace with highlighted versions
     const replacements: Array<{ original: string; highlighted: string }> = [];
+    let match;
 
     while ((match = codeBlockRegex.exec(htmlContent)) !== null) {
         const language = match[1];
@@ -152,12 +149,9 @@ export async function getPostContent(slug: string): Promise<{ meta: BlogPostMeta
     const post = getPostBySlug(slug);
     if (!post) return null;
 
-    const processedContent = await unified()
-        .use(remarkParse)
+    const processedContent = await remark()
         .use(remarkGfm)
-        .use(remarkRehype)
-        .use(rehypeMermaid, { strategy: 'inline-svg' })
-        .use(rehypeStringify)
+        .use(html)
         .process(post.content);
 
     let htmlContent = processedContent.toString();
