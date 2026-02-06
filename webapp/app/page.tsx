@@ -29,7 +29,7 @@ export default function Home() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="https://github.com/fluxmedia/fluxmedia" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/codewithveek/fluxmedia" target="_blank" rel="noopener noreferrer">
                 <Github className="mr-2 h-4 w-4" />
                 View on GitHub
               </a>
