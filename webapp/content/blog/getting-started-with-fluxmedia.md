@@ -61,11 +61,11 @@ console.log(result.url);
 ## What Makes FluxMedia Different?
 
 ### Unified API
-
-Write your upload logic once. Switch providers by changing a single line:
-
+ 
+Write your upload logic once. Use it with any provider.
+ 
 ```typescript
-// Switch from S3 to Cloudinary - your upload code stays the same!
+// Need to use Cloudinary instead? Same API!
 const uploader = new MediaUploader(
   new CloudinaryProvider({
     cloudName: 'my-cloud',
@@ -73,8 +73,8 @@ const uploader = new MediaUploader(
     apiSecret: '...',
   })
 );
-
-// Same API works!
+ 
+// Same upload code works everywhere!
 await uploader.upload(file, { folder: 'uploads' });
 ```
 
@@ -109,7 +109,7 @@ await uploader.use(loggerPlugin);
 ## Next Steps
 
 - [Explore the Plugin System](/blog/understanding-the-plugin-system)
-- [Switch Providers with Zero Effort](/blog/switching-providers-zero-effort)
+- [Using Multiple Providers with Zero Effort](/blog/using-multiple-providers-zero-effort)
 - [Read the full documentation](/docs)
 
 Happy uploading!

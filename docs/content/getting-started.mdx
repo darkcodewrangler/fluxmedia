@@ -89,7 +89,7 @@ const uploader = new MediaUploader(
   new CloudinaryProvider({ ... })
 );
 
-// After: Switch to S3 - same code works!
+// Need S3 instead? Same interface!
 import { S3Provider } from '@fluxmedia/s3';
 
 const uploader = new MediaUploader(

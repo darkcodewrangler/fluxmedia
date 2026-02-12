@@ -1,14 +1,14 @@
 ---
-title: Switching Providers with Zero Effort
+title: Using Multiple Providers with Zero Effort
 date: '2026-02-05'
-excerpt: Learn how FluxMedia's unified API lets you migrate between S3, Cloudinary, and R2 without changing your upload code.
+excerpt: Learn how FluxMedia's unified API lets you use S3, Cloudinary, and R2 together without changing your upload code.
 author: FluxMedia Team
-tags: ['providers', 'migration', 'tutorial']
+tags: ['providers', 'multi-cloud', 'tutorial']
 ---
 
-# Switching Providers with Zero Effort
+# Using Multiple Providers with Zero Effort
 
-One of FluxMedia's core promises is provider portability. This guide shows how to switch between AWS S3, Cloudinary, and Cloudflare R2 without touching your upload logic.
+One of FluxMedia's core promises is a unified API. This guide shows how to use AWS S3, Cloudinary, and Cloudflare R2 together without rewriting your upload logic.
 
 ## The Problem
 
@@ -26,11 +26,11 @@ cloudinary.config({ cloud_name: '...', api_key: '...', api_secret: '...' });
 await cloudinary.uploader.upload(file, { folder: '...' });
 ```
 
-Switching requires rewriting all upload code. That's painful.
+Using multiple providers requires learning different APIs and writing separate logic. That's inefficient.
 
 ## The FluxMedia Solution
 
-With FluxMedia, your upload code is provider-agnostic:
+With FluxMedia, your upload code works consistently across any provider:
 
 ```typescript
 // Your upload logic - works with ANY provider
@@ -43,20 +43,20 @@ async function uploadFile(uploader: MediaUploader, file: File) {
 }
 ```
 
-Switch providers by changing the uploader configuration:
+Use different providers by simply instantiating the right one:
 
 ```typescript
-// S3
+// S3 for archives
 const s3Uploader = new MediaUploader(
   new S3Provider({
     region: 'us-east-1',
-    bucket: 'my-bucket',
+    bucket: 'my-archive-bucket',
     accessKeyId: process.env.S3_KEY,
     secretAccessKey: process.env.S3_SECRET,
   })
 );
 
-// Cloudinary
+// Cloudinary for media assets
 const cloudinaryUploader = new MediaUploader(
   new CloudinaryProvider({
     cloudName: process.env.CLOUDINARY_CLOUD,
@@ -65,7 +65,7 @@ const cloudinaryUploader = new MediaUploader(
   })
 );
 
-// R2
+// R2 for video delivery
 const r2Uploader = new MediaUploader(
   new R2Provider({
     accountId: process.env.R2_ACCOUNT,
@@ -83,60 +83,46 @@ await uploadFile(r2Uploader, file);
 
 ## Environment-Based Provider Selection
 
-A common pattern is selecting provider based on environment:
+A common pattern is selecting provider based on environment or use case:
 
 ```typescript
-function createUploader() {
-  const provider = process.env.MEDIA_PROVIDER;
+function createUploader(useCase: 'archive' | 'media' | 'video' = 'media') {
   
-  switch (provider) {
-    case 's3':
-      return new MediaUploader(new S3Provider({
-        region: process.env.S3_REGION!,
-        bucket: process.env.S3_BUCKET!,
-        accessKeyId: process.env.S3_KEY!,
-        secretAccessKey: process.env.S3_SECRET!,
-      }));
+  switch (useCase) {
+    case 'archive':
+      return new MediaUploader(new S3Provider({ ... }));
       
-    case 'cloudinary':
-      return new MediaUploader(new CloudinaryProvider({
-        cloudName: process.env.CLOUDINARY_CLOUD!,
-        apiKey: process.env.CLOUDINARY_KEY!,
-        apiSecret: process.env.CLOUDINARY_SECRET!,
-      }));
+    case 'media':
+      return new MediaUploader(new CloudinaryProvider({ ... }));
       
-    case 'r2':
-      return new MediaUploader(new R2Provider({
-        accountId: process.env.R2_ACCOUNT!,
-        bucket: process.env.R2_BUCKET!,
-        accessKeyId: process.env.R2_KEY!,
-        secretAccessKey: process.env.R2_SECRET!,
-      }));
+    case 'video':
+      return new MediaUploader(new R2Provider({ ... }));
       
     default:
-      throw new Error(`Unknown provider: ${provider}`);
+      throw new Error(`Unknown use case: ${useCase}`);
   }
 }
 
-// Use throughout your app
-export const uploader = createUploader();
+// Use based on needs
+const archiveUploader = createUploader('archive');
+const mediaUploader = createUploader('media');
 ```
 
 ## Feature Detection
 
-Some features are provider-specific. Use `supports()` to check:
+Some features are provider-specific, but the API handles this gracefully. Use `supports()` to check:
 
 ```typescript
 if (uploader.supports('transformations.resize')) {
   // Cloudinary supports on-the-fly transformations
   const url = uploader.getUrl(id, { width: 400, height: 400 });
 } else {
-  // S3/R2 don't - serve original or pre-process
+  // S3/R2 don't - serve original
   const url = uploader.getUrl(id);
 }
 ```
 
-## When to Choose Which Provider
+## When to Use Which Provider
 
 | Provider       | Best For                                        |
 | -------------- | ----------------------------------------------- |
@@ -144,14 +130,14 @@ if (uploader.supports('transformations.resize')) {
 | **R2**         | Cost savings (no egress fees), edge performance |
 | **Cloudinary** | Image/video transformations, CDN delivery       |
 
-## Migration Checklist
+## Integration Checklist
 
-1. Install the new provider package
-2. Add environment variables for new provider
-3. Update your `createUploader` factory
-4. Deploy and test
+1. Install the provider packages you need
+2. Configure credentials
+3. Create your `createUploader` factory
+4. Start uploading!
 
-That's it. Zero upload code changes required.
+That's it. Consistent API for all your media needs.
 
 ## Next Steps
 

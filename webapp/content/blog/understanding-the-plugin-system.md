@@ -170,5 +170,5 @@ pnpm add @fluxmedia/plugins
 ## Next Steps
 
 - [Getting Started Guide](/blog/getting-started-with-fluxmedia)
-- [Switch Providers Effortlessly](/blog/switching-providers-zero-effort)
+- [Using Multiple Providers with Zero Effort](/blog/using-multiple-providers-zero-effort)
 - [Full Documentation](/docs)
