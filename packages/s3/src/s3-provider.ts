@@ -2,11 +2,13 @@ import type {
   MediaProvider,
   UploadOptions,
   UploadResult,
+  UploadInput,
   TransformationOptions,
   ProviderFeatures,
 } from '@fluxmedia/core';
 import { MediaErrorCode, createMediaError, getFileType } from '@fluxmedia/core';
 import type { S3Client as S3ClientType } from '@aws-sdk/client-s3';
+import type { Readable } from 'node:stream';
 import { S3Features } from './features';
 import type { S3Config } from './types';
 
@@ -120,21 +122,34 @@ export class S3Provider implements MediaProvider {
         secretAccessKey: this.config.secretAccessKey,
       },
       ...(this.config.endpoint && { endpoint: this.config.endpoint }),
-      ...(this.config.forcePathStyle !== undefined && { forcePathStyle: this.config.forcePathStyle }),
+      ...(this.config.forcePathStyle !== undefined && {
+        forcePathStyle: this.config.forcePathStyle,
+      }),
     });
     this.client = client;
     return client;
   }
 
-  async upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult> {
+  async upload(file: UploadInput, options?: UploadOptions): Promise<UploadResult> {
     const client = await this.ensureClient();
     const Upload = await getUploadClass();
 
     try {
       const key = this.generateKey(options);
 
-      // Detect content type using magic bytes for accuracy
-      const { contentType, extension } = await this.getContentType(file);
+      // Determine if the input is a stream (Readable or ReadableStream)
+      const isStream = this.isStreamInput(file);
+
+      // For streams, skip magic-byte detection; use contentType from options
+      const { contentType, extension } = isStream
+        ? {
+            contentType: options?.contentType ?? 'application/octet-stream',
+            extension: options?.contentType ? this.extensionFromMime(options.contentType) : '',
+          }
+        : await this.getContentType(file as File | Buffer);
+
+      // Determine if retry/resume is configured (leave parts for potential resume)
+      const hasRetryConfig = !!options?.metadata?._retry;
 
       // Use Upload class for ALL files (small and large)
       // It automatically handles multipart for files >5MB
@@ -143,7 +158,7 @@ export class S3Provider implements MediaProvider {
         params: {
           Bucket: this.config.bucket,
           Key: key,
-          Body: file,
+          Body: file as File | Buffer | Readable | ReadableStream<Uint8Array>,
           ContentType: contentType,
           Metadata: {
             ...(options?.metadata || {}),
@@ -153,13 +168,17 @@ export class S3Provider implements MediaProvider {
         // Configuration for multipart upload
         queueSize: 4, // Upload 4 parts in parallel
         partSize: 5 * 1024 * 1024, // 5MB per part (S3 minimum)
-        leavePartsOnError: false, // Auto-cleanup failed uploads
+        leavePartsOnError: hasRetryConfig, // Keep parts for resume when retry is configured
+        ...(options?.signal && { abortController: new AbortController() }),
       });
 
       // Track upload progress via native event
-      if (options?.onProgress) {
+      if (options?.onProgress || options?.onByteProgress) {
         upload.on('httpUploadProgress', (progress: Progress) => {
-          if (progress.total) {
+          if (options?.onByteProgress) {
+            options.onByteProgress(progress.loaded ?? 0, progress.total);
+          }
+          if (options?.onProgress && progress.total) {
             const percentComplete = (progress.loaded! / progress.total) * 100;
             options.onProgress!(percentComplete);
           }
@@ -169,9 +188,19 @@ export class S3Provider implements MediaProvider {
       // Execute upload
       await upload.done();
 
-      // Use byteLength for correct size calculation
-      const size = file instanceof Buffer ? file.byteLength : (file as File).size;
-      return this.createResult(key, size, extension, options?.metadata as Record<string, string> | undefined);
+      // Use byteLength for correct size calculation (streams report 0)
+      const size =
+        file instanceof Buffer
+          ? file.byteLength
+          : typeof File !== 'undefined' && file instanceof File
+            ? (file as File).size
+            : 0; // Stream — size unknown until upload completes
+      return this.createResult(
+        key,
+        size,
+        extension,
+        options?.metadata as Record<string, string> | undefined
+      );
     } catch (error) {
       throw this.mapS3Error(error, MediaErrorCode.UPLOAD_FAILED);
     }
@@ -210,7 +239,7 @@ export class S3Provider implements MediaProvider {
         url: this.getUrl(id),
         publicUrl: this.getUrl(id),
         size: response.ContentLength ?? 0,
-        format: metadata?.extension || "",
+        format: metadata?.extension || '',
         provider: this.name,
         metadata: {
           contentType: response.ContentType,
@@ -265,7 +294,6 @@ export class S3Provider implements MediaProvider {
     return results;
   }
 
-
   async deleteMultiple(ids: string[]): Promise<void> {
     // Batched processing with concurrency control
     const concurrency = 10;
@@ -317,9 +345,10 @@ export class S3Provider implements MediaProvider {
     const baseFilename = options?.filename ?? this.generateRandomId();
     // When uniqueFilename is true (default) or not specified, append a short ID
     const shouldMakeUnique = options?.uniqueFilename !== false;
-    const filename = shouldMakeUnique && options?.filename
-      ? `${baseFilename}-${this.generateShortId()}`
-      : baseFilename;
+    const filename =
+      shouldMakeUnique && options?.filename
+        ? `${baseFilename}-${this.generateShortId()}`
+        : baseFilename;
     const folder = options?.folder ? `${options.folder}/` : '';
     return `${folder}${filename}`;
   }
@@ -345,20 +374,67 @@ export class S3Provider implements MediaProvider {
     return `${timestamp}${random}`.substring(0, 12);
   }
 
-  private async getContentType(file: File | Buffer): Promise<{ contentType: string, extension: string }> {
+  private async getContentType(
+    file: File | Buffer
+  ): Promise<{ contentType: string; extension: string }> {
     if (file instanceof Buffer) {
       // Use magic byte detection for accurate MIME type
       const detected = await getFileType(file);
-      return { contentType: detected?.mime ?? 'application/octet-stream', extension: detected?.ext ?? '' };
+      return {
+        contentType: detected?.mime ?? 'application/octet-stream',
+        extension: detected?.ext ?? '',
+      };
     }
-    return { contentType: (file as File).type || 'application/octet-stream', extension: (file as File).name.split('.').pop() || '' };
+    return {
+      contentType: (file as File).type || 'application/octet-stream',
+      extension: (file as File).name.split('.').pop() || '',
+    };
   }
 
+  /**
+   * Check whether the given input is a stream (Node.js Readable or Web ReadableStream).
+   */
+  private isStreamInput(file: UploadInput): boolean {
+    if (file instanceof Buffer) return false;
+    if (typeof File !== 'undefined' && file instanceof File) return false;
+    // Duck-type check for Node.js Readable (has pipe method) or Web ReadableStream (has getReader)
+    return (
+      typeof (file as Readable).pipe === 'function' ||
+      typeof (file as ReadableStream).getReader === 'function'
+    );
+  }
 
+  /**
+   * Derive a file extension from a MIME type string.
+   */
+  private extensionFromMime(mime: string): string {
+    const map: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'image/webp': 'webp',
+      'image/avif': 'avif',
+      'image/svg+xml': 'svg',
+      'video/mp4': 'mp4',
+      'video/webm': 'webm',
+      'video/quicktime': 'mov',
+      'audio/mpeg': 'mp3',
+      'audio/wav': 'wav',
+      'application/pdf': 'pdf',
+      'application/octet-stream': '',
+    };
+    return map[mime] ?? mime.split('/').pop() ?? '';
+  }
 
-  private createResult(key: string, size: number, extension: string, metadata: Record<string, string> | undefined): UploadResult {
+  private createResult(
+    key: string,
+    size: number,
+    extension: string,
+    metadata: Record<string, string> | undefined
+  ): UploadResult {
     return {
       id: key,
+      storageKey: key,
       url: this.getUrl(key),
       publicUrl: this.getUrl(key),
       size,
@@ -373,7 +449,11 @@ export class S3Provider implements MediaProvider {
    * Maps S3-specific errors to MediaError with appropriate codes
    */
   private mapS3Error(error: unknown, defaultCode: MediaErrorCode): never {
-    const err = error as { name?: string; message?: string; $metadata?: { httpStatusCode?: number } };
+    const err = error as {
+      name?: string;
+      message?: string;
+      $metadata?: { httpStatusCode?: number };
+    };
     const httpCode = err.$metadata?.httpStatusCode;
 
     // Bucket errors
