@@ -139,7 +139,7 @@ await uploader.use(metadataPlugin);
 await uploader.use(analyticsPlugin);
 
 // Check registered plugins
-console.log(uploader.getPlugins().map(p => p.name));
+console.log(uploader.plugins.getAll().map(p => p.name));
 // ['validator', 'metadata', 'analytics']
 ```
 
@@ -167,21 +167,21 @@ pnpm add @fluxmedia/plugins
 
 ```typescript
 import {
-  fileValidationPlugin,
-  imageOptimizationPlugin,
-  metadataExtractionPlugin,
-  analyticsPlugin,
-  retryPlugin,
+  createFileValidationPlugin,
+  createImageOptimizationPlugin,
+  createMetadataExtractionPlugin,
+  createAnalyticsPlugin,
+  createRetryPlugin,
 } from '@fluxmedia/plugins';
 
 // Validate file type and size
-await uploader.use(fileValidationPlugin({
+await uploader.use(createFileValidationPlugin({
   maxSize: 10 * 1024 * 1024,
   allowedTypes: ['image/*', 'video/*'],
 }));
 
 // Automatic retry with exponential backoff
-await uploader.use(retryPlugin({ maxRetries: 3 }));
+await uploader.use(createRetryPlugin({ maxRetries: 3 }));
 ```
 
 - **File Validation** — Type, size, and extension checks

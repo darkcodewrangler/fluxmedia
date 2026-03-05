@@ -29,9 +29,9 @@ const PLUGIN_WAY = `// FluxMedia: With Plugins
 import { MediaUploader } from "@fluxmedia/core";
 import { S3Provider } from "@fluxmedia/s3";
 import { 
-  fileValidationPlugin, 
-  loggerPlugin, 
-  retryPlugin 
+  createFileValidationPlugin, 
+  createAnalyticsPlugin, 
+  createRetryPlugin 
 } from "@fluxmedia/plugins";
 
 const uploader = new MediaUploader(
@@ -44,13 +44,13 @@ const uploader = new MediaUploader(
 );
 
 // Register official plugins
-await uploader.use(fileValidationPlugin({
+await uploader.use(createFileValidationPlugin({
   maxSize: 10 * 1024 * 1024, // 10MB
   allowedTypes: ["image/*", "video/*"]
 }));
 
-await uploader.use(loggerPlugin());
-await uploader.use(retryPlugin({ maxRetries: 3 }));
+await uploader.use(createAnalyticsPlugin());
+await uploader.use(createRetryPlugin({ maxRetries: 3 }));
 
 // One API for S3, R2, and Cloudinary!
 await uploader.upload(file, {

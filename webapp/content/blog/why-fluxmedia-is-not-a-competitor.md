@@ -64,7 +64,7 @@ await videoUploader.upload(video, { folder: 'videos' });
 FluxMedia also adds features that benefit every provider equally:
 
 - **Fallback providers** — automatic failover if the primary provider hits a temporary error.
-- **Structured errors** — typed error codes (`NETWORK_ERROR`, `RATE_LIMITED`, `VALIDATION_ERROR`) instead of opaque exceptions.
+- **Structured errors** — typed error codes (`NETWORK_ERROR`, `RATE_LIMITED`, `INVALID_FILE_TYPE`) instead of opaque exceptions.
 - **Plugin system** — validation, retry, analytics, and metadata extraction that work with any provider.
 - **Progress tracking** — normalized 0–100 percentage and raw byte-level progress callbacks.
 

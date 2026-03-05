@@ -152,13 +152,13 @@ const result = await uploader.upload(file);
 Add functionality with the official plugins or build your own:
 
 ```typescript
-import { fileValidationPlugin, retryPlugin } from '@fluxmedia/plugins';
+import { createFileValidationPlugin, createRetryPlugin } from '@fluxmedia/plugins';
 
-await uploader.use(fileValidationPlugin({
+await uploader.use(createFileValidationPlugin({
   maxSize: 10 * 1024 * 1024, // 10MB
   allowedTypes: ['image/*'],
 }));
-await uploader.use(retryPlugin({ maxRetries: 3 }));
+await uploader.use(createRetryPlugin({ maxRetries: 3 }));
 ```
 
 ### Feature Detection

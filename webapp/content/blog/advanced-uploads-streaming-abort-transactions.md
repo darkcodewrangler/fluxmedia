@@ -56,7 +56,7 @@ try {
     signal: controller.signal,
   });
 } catch (error) {
-  if (error.code === 'UPLOAD_ABORTED') {
+  if (controller.signal.aborted) {
     console.log('Upload was cancelled by user');
   }
 }
@@ -101,27 +101,30 @@ The `onProgress` callback gives you a clean 0–100 value that's ideal for progr
 
 ## Transactional Uploads
 
-For workflows where an upload must be atomic — succeed completely or not at all — FluxMedia supports transactional uploads with commit/rollback semantics:
+For workflows where an upload must be atomic — succeed completely or not at all — FluxMedia supports transactional uploads with a callback-based commit/rollback pattern:
 
 ```typescript
-const transaction = await uploader.uploadWithTransaction(file, {
-  folder: 'documents',
-  filename: 'contract-v2',
-});
+const { uploadResult, commitResult } = await uploader.uploadWithTransaction(
+  file,
+  { folder: 'documents', filename: 'contract-v2' },
+  {
+    onCommit: async (result) => {
+      // Perform additional business logic
+      await database.updateRecord(result.storageKey);
+      await notifyTeam(result.url);
+      return { recordId: result.storageKey };
+    },
+    onRollback: async (result, error) => {
+      console.error('Commit failed, rolled back:', error.message);
+    },
+  }
+);
 
-try {
-  // Perform additional business logic
-  await database.updateRecord(transaction.result.id);
-  await notifyTeam(transaction.result.url);
-
-  // Everything succeeded — commit the upload
-  await transaction.commit();
-} catch (error) {
-  // Something failed — roll back (delete) the uploaded file
-  await transaction.rollback();
-  throw error;
-}
+console.log(uploadResult.url);       // The uploaded file URL
+console.log(commitResult.recordId);   // Value returned from onCommit
 ```
+
+If `onCommit` throws, FluxMedia automatically calls your `onRollback` callback. If you don't provide `onRollback`, it defaults to deleting the uploaded file — so orphaned files are cleaned up automatically.
 
 This is invaluable for scenarios like:
 
@@ -170,8 +173,11 @@ try {
   await uploader.upload(file, { folder: 'uploads' });
 } catch (error) {
   switch (error.code) {
-    case MediaErrorCode.VALIDATION_ERROR:
-      console.error('Invalid file:', error.message);
+    case MediaErrorCode.INVALID_FILE_TYPE:
+      console.error('Invalid file type:', error.message);
+      break;
+    case MediaErrorCode.FILE_TOO_LARGE:
+      console.error('File too large:', error.message);
       break;
     case MediaErrorCode.NETWORK_ERROR:
       console.error('Network issue — try again later');
@@ -222,14 +228,14 @@ Here's a production-ready upload function that combines several of these feature
 
 ```typescript
 import { MediaUploader, MediaErrorCode } from '@fluxmedia/core';
-import { retryPlugin, fileValidationPlugin } from '@fluxmedia/plugins';
+import { createRetryPlugin, createFileValidationPlugin } from '@fluxmedia/plugins';
 
 // Configure uploader with plugins and fallback
 const uploader = new MediaUploader(
   new CloudinaryProvider({ ... }),
   [
-    fileValidationPlugin({ maxSize: 50 * 1024 * 1024 }),
-    retryPlugin({ maxRetries: 2 }),
+    createFileValidationPlugin({ maxSize: 50 * 1024 * 1024 }),
+    createRetryPlugin({ maxRetries: 2 }),
   ],
   { fallbackProvider: new S3Provider({ ... }) }
 );
@@ -239,20 +245,18 @@ async function uploadWithFeedback(
   onProgress: (percent: number) => void,
   signal?: AbortSignal
 ) {
-  const transaction = await uploader.uploadWithTransaction(file, {
-    folder: 'user-uploads',
-    onProgress,
-    signal,
-  });
+  const { uploadResult } = await uploader.uploadWithTransaction(
+    file,
+    { folder: 'user-uploads', onProgress, signal },
+    {
+      onCommit: async (result) => {
+        await saveToDatabase(result);
+      },
+    }
+  );
 
-  try {
-    await saveToDatabase(transaction.result);
-    await transaction.commit();
-    return transaction.result;
-  } catch {
-    await transaction.rollback();
-    throw new Error('Upload succeeded but follow-up failed. File cleaned up.');
-  }
+  // If onCommit throws, FluxMedia auto-deletes the uploaded file
+  return uploadResult;
 }
 ```
 
