@@ -1,41 +1,40 @@
-# FluxMedia
+# FluxMedia Documentation
 
-> FluxMedia is a provider-agnostic media upload library for JavaScript and TypeScript. Upload images, videos, and files to Cloudinary, AWS S3, or Cloudflare R2 using a single unified API. Write your upload logic once, switch providers without changing a single line of code.
+> FluxMedia is a provider-agnostic media upload library for JavaScript and TypeScript. It provides a unified API for uploading images, videos, and files to any cloud storage provider including Cloudinary, AWS S3, and Cloudflare R2. Write your upload logic once, switch providers without changing code.
 
-FluxMedia is an open-source library — not a storage service. It wraps existing cloud storage providers behind a consistent interface. The project is organized as a monorepo of npm packages under the `@fluxmedia` scope.
+FluxMedia is available as a set of npm packages under the `@fluxmedia` scope. The core package provides the `MediaUploader` class, plugin system, and structured error handling, while provider packages implement the `MediaProvider` interface for specific services. A React integration package provides hooks and components for client-side uploads.
 
-Key capabilities:
-- Unified API across all providers: `upload`, `delete`, `get`, `getUrl`, `uploadMultiple`, `deleteMultiple`
-- Plugin system with lifecycle hooks: `beforeUpload`, `afterUpload`, `onError`, `beforeDelete`, `afterDelete`
-- React hooks (`useMediaUpload`) and components (`MediaUpload`) for client-side uploads
-- File type detection using magic bytes (more reliable than file extensions)
-- Official plugins: file validation, image optimization, metadata extraction, analytics, retry with exponential backoff
+- FluxMedia is *not* a storage service — it is a library that wraps existing providers
+- All providers share the same API surface: `upload`, `delete`, `get`, `getUrl`, `getUrlAsync`, `uploadMultiple`, `deleteMultiple`, `uploadWithTransaction`
+- Supports multiple input types: `File`, `Buffer`, `Readable`, `ReadableStream`
+- Fallback providers for automatic failover on errors
+- Plugins extend behavior via lifecycle hooks: `beforeUpload`, `afterUpload`, `onError`, `beforeDelete`, `afterDelete`, `beforeGetUrl`
+- Optional plugins degrade gracefully — errors in non-critical plugins don't block uploads
+- Structured errors with `MediaErrorCode` enum and `PartialUploadError` for resumable multipart uploads
+- 179 tests across all packages
 
-## Documentation
+## Docs
 
-- [Getting Started](https://www.fluxmedia.dev/docs/getting-started): Installation guide, basic usage, and quick start
-- [API Reference](https://www.fluxmedia.dev/docs/api): Complete API documentation for all packages
-- [Plugins Guide](https://www.fluxmedia.dev/docs/plugins): Official plugins and custom plugin development
-- [React Integration](https://www.fluxmedia.dev/docs/react): Hooks, components, and upload modes
-- [Providers](https://www.fluxmedia.dev/docs/providers): Cloudinary, S3, and R2 configuration
+- [Getting Started](https://www.fluxmedia.dev/docs/getting-started): Installation, basic usage, streaming uploads, fallback providers, abort support, React integration
+- [API Reference](https://www.fluxmedia.dev/docs/api): Complete API for MediaUploader, MediaUploaderConfig, UploadInput, types, errors, PartialUploadError, plugin types, analytics events, testing utilities
+- [Plugins](https://www.fluxmedia.dev/docs/plugins): Official plugins (file validation, image optimization, metadata extraction, analytics, retry with PartialUploadError resume) and custom plugin creation
+- [React Integration](https://www.fluxmedia.dev/docs/react): useMediaUpload hook, MediaUpload component, upload modes (signed, proxy, direct), preview, and file type detection
 
-## Blog
+## Providers
 
-- [Getting Started with FluxMedia](https://www.fluxmedia.dev/blog/getting-started-with-fluxmedia): Step-by-step tutorial for first-time users
-- [Understanding the Plugin System](https://www.fluxmedia.dev/blog/understanding-the-plugin-system): Deep dive into plugin lifecycle, hooks, and official plugins
-- [Using Multiple Providers](https://www.fluxmedia.dev/blog/using-multiple-providers-zero-effort): Guide to switching and using multiple providers simultaneously
-- [Why FluxMedia is Not a Competitor](https://www.fluxmedia.dev/blog/why-fluxmedia-is-not-a-competitor): FluxMedia's relationship to cloud providers explained
+- [Cloudinary Provider](https://www.fluxmedia.dev/docs/providers/cloudinary): Configuration, transformations, signed uploads, and Cloudinary-specific features
+- [AWS S3 Provider](https://www.fluxmedia.dev/docs/providers/s3): Configuration, presigned URLs, multipart uploads, and S3-specific options
+- [Cloudflare R2 Provider](https://www.fluxmedia.dev/docs/providers/r2): Configuration, custom domains, and R2-specific options
 
 ## Packages
 
-- `@fluxmedia/core`: Core types, MediaUploader class, plugin system, file type detection
+- `@fluxmedia/core`: Core types, MediaUploader class, plugin system, structured errors, file type detection, testing utilities
 - `@fluxmedia/cloudinary`: Cloudinary provider with image/video transformations
 - `@fluxmedia/s3`: AWS S3 provider with presigned URL support
 - `@fluxmedia/r2`: Cloudflare R2 provider (S3-compatible)
-- `@fluxmedia/react`: React hooks and components for client-side uploads
-- `@fluxmedia/plugins`: Official plugins for validation, optimization, metadata, analytics, and retry
+- `@fluxmedia/react`: React hooks (useMediaUpload) and components (MediaUpload)
+- `@fluxmedia/plugins`: Official plugins for validation, optimization, metadata extraction, analytics, and retry
 
 ## Optional
 
 - [Source Code](https://github.com/codewithveek/fluxmedia): GitHub repository with full source, examples, and issue tracker
-- [Changelog](https://www.fluxmedia.dev/changelog): Version history and release notes

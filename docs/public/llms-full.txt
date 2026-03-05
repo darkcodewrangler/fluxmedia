@@ -4,20 +4,26 @@
 
 FluxMedia is an open-source library — not a storage service. It wraps existing cloud storage providers behind a consistent interface. All providers implement the same `MediaProvider` interface.
 
-- All providers share the same API surface: `upload`, `delete`, `get`, `getUrl`, `uploadMultiple`, `deleteMultiple`
-- Plugins extend behavior via lifecycle hooks: `beforeUpload`, `afterUpload`, `onError`, `beforeDelete`, `afterDelete`
+- All providers share the same API surface: `upload`, `delete`, `get`, `getUrl`, `getUrlAsync`, `uploadMultiple`, `deleteMultiple`, `uploadWithTransaction`
+- Accepts multiple input types: `File`, `Buffer`, `Readable`, `ReadableStream` (via `UploadInput` union type)
+- Fallback providers for automatic failover when primary provider fails
+- Transactional uploads with commit/rollback semantics
+- Plugins extend behavior via lifecycle hooks: `beforeUpload`, `afterUpload`, `onError`, `beforeDelete`, `afterDelete`, `beforeGetUrl`
+- Optional plugins (`optional: true`) degrade gracefully — errors don't block uploads
+- Structured errors with `MediaErrorCode` enum and `PartialUploadError` for resumable multipart uploads
 - React integration via `useMediaUpload` hook and `MediaUpload` component
+- 179 tests across all packages
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| `@fluxmedia/core` | Core types and MediaUploader class |
+| `@fluxmedia/core` | Core types, MediaUploader, plugin system, structured errors, file type detection, testing utilities |
 | `@fluxmedia/cloudinary` | Cloudinary provider with transformations |
 | `@fluxmedia/s3` | AWS S3 provider |
 | `@fluxmedia/r2` | Cloudflare R2 provider |
 | `@fluxmedia/react` | React hooks and components |
-| `@fluxmedia/plugins` | Official plugins for validation, optimization, metadata, analytics, and retry |
+| `@fluxmedia/plugins` | Official plugins for validation, optimization, metadata extraction, analytics, and retry |
 
 ---
 
@@ -34,11 +40,11 @@ pnpm add @fluxmedia/cloudinary  # Full featured with transformations
 pnpm add @fluxmedia/s3          # AWS S3
 pnpm add @fluxmedia/r2          # Cloudflare R2
 
-# Optional: React integration
-pnpm add @fluxmedia/react
-
 # Optional: Official plugins
 pnpm add @fluxmedia/plugins
+
+# Optional: React integration
+pnpm add @fluxmedia/react
 ```
 
 ### Basic Usage (Node.js / Server)
@@ -60,9 +66,29 @@ const result = await uploader.upload(fileBuffer, {
   filename: 'avatar-123',
 });
 
-console.log(result.url);     // https://res.cloudinary.com/...
-console.log(result.id);      // user-avatars/avatar-123
-console.log(result.format);  // jpg
+console.log(result.url);        // https://res.cloudinary.com/...
+console.log(result.id);         // user-avatars/avatar-123
+console.log(result.storageKey); // Provider-specific storage key
+console.log(result.format);     // jpg
+```
+
+### Streaming Uploads
+
+```typescript
+import { createReadStream } from 'fs';
+
+// Upload from Node.js Readable stream
+const stream = createReadStream('/path/to/large-file.mp4');
+const result = await uploader.upload(stream, {
+  folder: 'videos',
+  contentType: 'video/mp4',
+});
+
+// Upload from web ReadableStream
+const response = await fetch('https://example.com/image.jpg');
+const result = await uploader.upload(response.body!, {
+  folder: 'imports',
+});
 ```
 
 ### Basic Usage (React)
@@ -110,6 +136,27 @@ const uploader = new MediaUploader(
 await uploader.upload(file, { folder: 'uploads' });
 ```
 
+### Fallback Providers
+
+```typescript
+import { MediaUploader, MediaErrorCode } from '@fluxmedia/core';
+
+const uploader = new MediaUploader(
+  new CloudinaryProvider({ ... }),  // Primary
+  [],
+  {
+    fallbackProvider: new S3Provider({ ... }),  // Fallback
+    fallbackOnErrors: [
+      MediaErrorCode.NETWORK_ERROR,
+      MediaErrorCode.RATE_LIMITED,
+    ],
+    onFallback: (error, fallback) => {
+      console.warn(`Using ${fallback.name}: ${error.message}`);
+    },
+  }
+);
+```
+
 ### Feature Detection
 
 ```typescript
@@ -128,12 +175,26 @@ if (uploader.supports('capabilities.videoProcessing')) {
 
 ### MediaUploader
 
-The main class for uploading files.
+The main class for uploading files. Supports fallback providers, transactional uploads, and plugin orchestration.
 
 #### Constructor
 
 ```typescript
-new MediaUploader(provider: MediaProvider, plugins?: FluxMediaPlugin[])
+new MediaUploader(
+  provider: MediaProvider,
+  plugins?: FluxMediaPlugin[],
+  config?: MediaUploaderConfig
+)
+```
+
+#### MediaUploaderConfig
+
+```typescript
+interface MediaUploaderConfig {
+  fallbackProvider?: MediaProvider;
+  fallbackOnErrors?: MediaErrorCode[];
+  onFallback?: (error: MediaError, fallbackProvider: MediaProvider) => void;
+}
 ```
 
 #### Methods
@@ -141,7 +202,7 @@ new MediaUploader(provider: MediaProvider, plugins?: FluxMediaPlugin[])
 **upload(file, options?)**
 
 ```typescript
-async upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult>
+async upload(file: UploadInput, options?: UploadOptions): Promise<UploadResult>
 ```
 
 **delete(id)**
@@ -162,11 +223,17 @@ async get(id: string): Promise<UploadResult>
 getUrl(id: string, transform?: TransformationOptions): string
 ```
 
+**getUrlAsync(id, transform?)**
+
+```typescript
+async getUrlAsync(id: string, transform?: TransformationOptions): Promise<string>
+```
+
 **uploadMultiple(files, options?)**
 
 ```typescript
 async uploadMultiple(
-  files: File[] | Buffer[],
+  files: UploadInput[],
   options?: UploadOptions & {
     concurrency?: number;
     onBatchProgress?: (completed: number, total: number) => void;
@@ -178,6 +245,25 @@ async uploadMultiple(
 
 ```typescript
 async deleteMultiple(ids: string[]): Promise<void>
+```
+
+**uploadWithTransaction(file, options?, callbacks?)**
+
+```typescript
+async uploadWithTransaction<T>(
+  file: UploadInput,
+  options?: UploadOptions,
+  callbacks?: TransactionCallbacks<T>
+): Promise<{ result: UploadResult; committed: T }>
+```
+
+**TransactionCallbacks:**
+
+```typescript
+interface TransactionCallbacks<T> {
+  onCommit: (result: UploadResult) => Promise<T>;
+  onRollback?: (result: UploadResult, error: Error) => Promise<void>;
+}
 ```
 
 **supports(feature)**
@@ -194,6 +280,12 @@ async use(plugin: FluxMediaPlugin): Promise<this>
 
 ### Types
 
+#### UploadInput
+
+```typescript
+type UploadInput = File | Buffer | Readable | ReadableStream;
+```
+
 #### UploadOptions
 
 ```typescript
@@ -204,7 +296,10 @@ interface UploadOptions {
   metadata?: Record<string, unknown>;
   transformation?: TransformationOptions;
   onProgress?: (percent: number) => void;
-  uniqueFilename?: boolean;  // Generate unique names (default: true)
+  onByteProgress?: (loaded: number, total: number) => void;
+  uniqueFilename?: boolean;     // Generate unique names (default: true)
+  contentType?: string;         // MIME type override
+  signal?: AbortSignal;         // Abort controller signal
 }
 ```
 
@@ -213,6 +308,7 @@ interface UploadOptions {
 ```typescript
 interface UploadResult {
   id: string;
+  storageKey: string;
   url: string;
   publicUrl: string;
   size: number;
@@ -245,11 +341,11 @@ interface MediaProvider {
   readonly features: ProviderFeatures;
   readonly native: unknown;
 
-  upload(file: File | Buffer, options?: UploadOptions): Promise<UploadResult>;
+  upload(file: UploadInput, options?: UploadOptions): Promise<UploadResult>;
   delete(id: string): Promise<void>;
   get(id: string): Promise<UploadResult>;
   getUrl(id: string, transform?: TransformationOptions): string;
-  uploadMultiple(files: File[] | Buffer[], options?: UploadOptions): Promise<UploadResult[]>;
+  uploadMultiple(files: UploadInput[], options?: UploadOptions): Promise<UploadResult[]>;
   deleteMultiple(ids: string[]): Promise<void>;
   search?(query: SearchOptions): Promise<UploadResult[]>;
 }
@@ -324,6 +420,32 @@ enum MediaErrorCode {
   FILE_NOT_FOUND = 'FILE_NOT_FOUND',
   DELETE_FAILED = 'DELETE_FAILED',
 }
+
+// Factory function
+function createMediaError(
+  code: MediaErrorCode,
+  message: string,
+  provider: string,
+  options?: { originalError?: unknown; details?: Record<string, unknown> }
+): MediaError;
+```
+
+### PartialUploadError
+
+For resumable multipart uploads:
+
+```typescript
+class PartialUploadError extends MediaError {
+  uploadContext: PartialUploadContext;
+}
+
+interface PartialUploadContext {
+  uploadId: string;
+  completedParts: number[];
+  totalParts: number;
+  bytesUploaded: number;
+  provider: string;
+}
 ```
 
 ### Plugin Types
@@ -332,6 +454,7 @@ enum MediaErrorCode {
 interface FluxMediaPlugin {
   name: string;
   version?: string;
+  optional?: boolean;   // If true, errors in hooks degrade gracefully
   hooks: PluginHooks;
   init?: () => Promise<void> | void;
   destroy?: () => Promise<void> | void;
@@ -340,11 +463,13 @@ interface FluxMediaPlugin {
 interface PluginHooks {
   beforeUpload?: (file, options) => Promise<{ file, options } | void>;
   afterUpload?: (result) => Promise<UploadResult>;
-  onError?: (error, context) => Promise<void>;
+  onError?: (error, context: { file, options, phase: UploadPhase, uploadResult? }) => Promise<void>;
   beforeDelete?: (id) => Promise<string | void>;
   afterDelete?: (id) => Promise<void>;
   beforeGetUrl?: (id, transform?) => Promise<{ id, transform? } | void>;
 }
+
+type UploadPhase = 'before' | 'upload' | 'after';
 ```
 
 ### Analytics Event Types
@@ -362,6 +487,18 @@ type TrackFunction = <T extends AnalyticsEventType>(
 ) => void;
 ```
 
+### Testing Utilities
+
+```typescript
+import { createMockProvider, createMockUploadResult, createProviderContractTests } from '@fluxmedia/core';
+
+// Create mock provider for unit tests
+const provider = createMockProvider({ name: 'test' });
+
+// Validate custom provider implementation
+createProviderContractTests('MyProvider', () => new MyProvider({ ... }));
+```
+
 ---
 
 ## Plugins
@@ -371,7 +508,7 @@ type TrackFunction = <T extends AnalyticsEventType>(
 ```bash
 pnpm add @fluxmedia/plugins
 
-# For image optimization:
+# For image optimization / metadata extraction:
 pnpm add sharp
 ```
 
@@ -407,7 +544,7 @@ const plugin = createImageOptimizationPlugin({
 
 ### Metadata Extraction Plugin
 
-Extracts EXIF data, dimensions, and file hashes:
+Extracts EXIF data, dimensions, and file hashes (marked `optional: true`):
 
 ```typescript
 import { createMetadataExtractionPlugin } from '@fluxmedia/plugins';
@@ -416,12 +553,13 @@ const plugin = createMetadataExtractionPlugin({
   extractExif: true,
   extractDimensions: true,
   hashFile: true,
+  hashAlgorithm: 'md5', // or 'sha256'
 });
 ```
 
 ### Analytics Plugin
 
-Logs and tracks upload operations with strongly-typed events:
+Logs and tracks upload operations with strongly-typed events (marked `optional: true`):
 
 ```typescript
 import { createAnalyticsPlugin } from '@fluxmedia/plugins';
@@ -429,6 +567,7 @@ import { createAnalyticsPlugin } from '@fluxmedia/plugins';
 const plugin = createAnalyticsPlugin({
   environment: 'production',
   logLevel: 'info',
+  trackPerformance: true,
   track: (event, data) => {
     myAnalytics.track(event, data);
   },
@@ -437,7 +576,7 @@ const plugin = createAnalyticsPlugin({
 
 ### Retry Plugin
 
-Automatic retry with exponential backoff:
+Automatic retry with exponential backoff and PartialUploadError resume:
 
 ```typescript
 import { createRetryPlugin, withRetry } from '@fluxmedia/plugins';
@@ -451,8 +590,9 @@ await uploader.use(createRetryPlugin({
   }
 }));
 
+// withRetry automatically resumes from PartialUploadError context
 const result = await withRetry(
-  () => uploader.upload(file),
+  (resumeContext) => uploader.upload(file),
   { maxRetries: 3, exponentialBackoff: true }
 );
 ```
@@ -472,9 +612,9 @@ const myPlugin = createPlugin('my-plugin', {
     return result;
   },
   onError: async (error, context) => {
-    console.error('Failed:', error.message);
+    console.error(`Failed in ${context.phase} phase:`, error.message);
   },
-});
+}, { optional: true });
 ```
 
 ### Plugin Manager API
@@ -482,12 +622,12 @@ const myPlugin = createPlugin('my-plugin', {
 ```typescript
 uploader.plugins.has('logger');
 const plugin = uploader.plugins.get('logger');
-await uploader.plugins.unregister('logger');
+await uploader.plugins.unregister('logger');  // Calls destroy()
 const allPlugins = uploader.plugins.getAll();
-await uploader.plugins.clear();
+await uploader.plugins.clear();  // Calls destroy() on each
 ```
 
-Plugins execute in registration order. When registering plugins with the same name, the last one wins.
+Plugins execute in registration order. When registering plugins with the same name, the last one wins (previous version's `destroy()` is called first).
 
 ---
 

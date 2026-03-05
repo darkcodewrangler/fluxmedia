@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getAllPostSlugs } from '@/lib/blog';
+import { getAllDocSlugs } from '@/lib/docs';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.fluxmedia.dev';
 
@@ -19,5 +20,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticUrls, ...postUrls];
+  const docUrls = getAllDocSlugs()
+    .filter((slug) => slug !== 'index')
+    .map((slug) => ({
+      url: `${siteUrl}/docs/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+
+  return [...staticUrls, ...postUrls, ...docUrls];
 }

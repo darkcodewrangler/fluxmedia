@@ -1,0 +1,285 @@
+# React Integration
+
+Hooks and components for React applications.
+
+## Installation
+
+```bash
+pnpm add @fluxmedia/core @fluxmedia/react
+```
+
+## useMediaUpload Hook
+
+The primary hook for handling uploads in React:
+
+```tsx
+import { useMediaUpload } from '@fluxmedia/react';
+
+function UploadForm() {
+  const { upload, uploading, progress, result, error, reset } = useMediaUpload({
+    mode: 'signed',
+    signUrlEndpoint: '/api/upload/sign',
+    onUploadComplete: (result) => console.log('Done:', result.url),
+    onUploadError: (error) => console.error('Failed:', error),
+  });
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept="image/*"
+        disabled={uploading}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) upload(file, { folder: 'uploads' });
+        }}
+      />
+      
+      {uploading && <progress value={progress} max={100} />}
+      {result && <img src={result.url} alt="Uploaded" />}
+      {error && <p>Error: {error.message}</p>}
+      
+      <button onClick={reset}>Reset</button>
+    </div>
+  );
+}
+```
+
+### Hook Options
+
+```typescript
+interface UseMediaUploadConfig {
+  mode: 'direct' | 'signed' | 'proxy';
+  signUrlEndpoint?: string;  // For 'signed' mode
+  proxyEndpoint?: string;    // For 'proxy' mode
+  defaultOptions?: {
+    folder?: string;
+    tags?: string[];
+  };
+  onUploadStart?: () => void;
+  onUploadComplete?: (result: UploadResult) => void;
+  onUploadError?: (error: Error) => void;
+}
+```
+
+### Hook Return Values
+
+```typescript
+interface UseMediaUploadReturn {
+  upload: (file: File, options?: UploadOptions) => Promise<UploadResult>;
+  uploading: boolean;
+  progress: number; // 0-100
+  result: UploadResult | null;
+  error: Error | null;
+  reset: () => void;
+  
+  // Preview functionality
+  preview: string | null;          // Object URL for preview
+  setPreview: (file: File | null) => void;  // Set preview from file
+  
+  // File type detection (magic bytes)
+  fileType: { mime: string; ext: string } | null;
+  detectFileType: (file: File) => Promise<{ mime: string; ext: string } | null>;
+}
+```
+
+## Preview Before Upload
+
+Show a preview of selected files before uploading:
+
+```tsx
+function UploadWithPreview() {
+  const { upload, preview, setPreview, uploading } = useMediaUpload({
+    mode: 'proxy',
+    proxyEndpoint: '/api/upload',
+  });
+
+  const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPreview(file);  // Creates object URL, handles cleanup
+      upload(file);
+    }
+  };
+
+  return (
+    <div>
+      {preview && <img src={preview} alt="Preview" />}
+      <input type="file" accept="image/*" onChange={handleSelect} />
+    </div>
+  );
+}
+```
+
+## File Type Detection
+
+Detect actual file type using magic bytes (more reliable than file extension):
+
+```tsx
+function ValidatedUpload() {
+  const { upload, detectFileType, fileType } = useMediaUpload({
+    mode: 'proxy',
+    proxyEndpoint: '/api/upload',
+  });
+
+  const handleSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const type = await detectFileType(file);
+    
+    if (!type?.mime.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    await upload(file);
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={handleSelect} />
+      {fileType && <p>Detected: {fileType.mime}</p>}
+    </div>
+  );
+}
+```
+
+## Provider Selection
+
+Pass provider selection to upload:
+
+```tsx
+function MultiProviderUpload() {
+  const [provider, setProvider] = useState<'cloudinary' | 's3' | 'r2'>('cloudinary');
+  const { upload } = useMediaUpload({
+    mode: 'proxy',
+    proxyEndpoint: '/api/upload',
+  });
+
+  const handleUpload = (file: File) => {
+    upload(file, {
+      folder: 'uploads',
+      provider,  // Passed to server endpoint
+      metadata: { description: 'User upload' },  // Custom metadata
+    });
+  };
+
+  return (
+    <div>
+      <select value={provider} onChange={(e) => setProvider(e.target.value as any)}>
+        <option value="cloudinary">Cloudinary</option>
+        <option value="s3">AWS S3</option>
+        <option value="r2">Cloudflare R2</option>
+      </select>
+      <input type="file" onChange={(e) => handleUpload(e.target.files![0])} />
+    </div>
+  );
+}
+```
+
+## Upload Modes
+
+### Signed Upload (Recommended)
+
+Browser gets a signed URL from your server, then uploads directly to the provider.
+
+```tsx
+const { upload } = useMediaUpload({
+  mode: 'signed',
+  signUrlEndpoint: '/api/upload/sign',
+});
+```
+
+**Server endpoint (Next.js):**
+
+```typescript
+// app/api/upload/sign/route.ts
+import crypto from 'crypto';
+
+export async function POST(request: Request) {
+  const { filename, folder } = await request.json();
+  
+  const timestamp = Math.round(Date.now() / 1000);
+  const signature = crypto
+    .createHash('sha1')
+    .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+    .digest('hex');
+
+  return Response.json({
+    uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+    fields: { api_key, timestamp, signature, folder },
+  });
+}
+```
+
+### Proxy Upload
+
+Upload goes through your server (more control, slightly slower).
+
+```tsx
+const { upload } = useMediaUpload({
+  mode: 'proxy',
+  proxyEndpoint: '/api/upload',
+});
+```
+
+**Server endpoint:**
+
+```typescript
+// app/api/upload/route.ts
+import { MediaUploader } from '@fluxmedia/core';
+import { CloudinaryProvider } from '@fluxmedia/cloudinary';
+
+export async function POST(request: Request) {
+  const formData = await request.formData();
+  const file = formData.get('file') as File;
+  
+  const uploader = new MediaUploader(new CloudinaryProvider({ ... }));
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await uploader.upload(buffer);
+  
+  return Response.json(result);
+}
+```
+
+## MediaUpload Component
+
+A render-prop component for more complex UIs:
+
+```tsx
+import { MediaUpload } from '@fluxmedia/react';
+
+function FileUploader() {
+  return (
+    <MediaUpload
+      config={{ mode: 'signed', signUrlEndpoint: '/api/upload/sign' }}
+      accept="image/*"
+      maxSize={5 * 1024 * 1024}
+      onComplete={(results) => console.log('Uploaded:', results)}
+      onError={(error) => console.error(error)}
+    >
+      {({ uploading, progress, result, error, openFileDialog }) => (
+        <div>
+          <button onClick={openFileDialog} disabled={uploading}>
+            {uploading ? `Uploading ${progress}%` : 'Select File'}
+          </button>
+          {result && <img src={result.url} alt="Uploaded" />}
+        </div>
+      )}
+    </MediaUpload>
+  );
+}
+```
+
+### Component Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `config` | UseMediaUploadConfig | Upload configuration |
+| `accept` | string | Accepted file types |
+| `multiple` | boolean | Allow multiple files |
+| `maxSize` | number | Max file size in bytes |
+| `onSelect` | (files: File[]) => void | Called when files selected |
+| `onComplete` | (results: UploadResult[]) => void | Called after upload |
+| `onError` | (error: Error) => void | Called on error |

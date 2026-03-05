@@ -1,0 +1,203 @@
+/* ─── Docs Content Styles ─── */
+/* Styled to match the webapp's dark premium theme */
+
+.docs-content {
+  color: hsl(var(--foreground));
+  line-height: 1.8;
+}
+
+/* Headings */
+.docs-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: hsl(var(--foreground));
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.docs-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.docs-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.docs-content h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Paragraphs */
+.docs-content p {
+  margin-bottom: 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Links */
+.docs-content a {
+  color: var(--color-brand);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s ease;
+}
+
+.docs-content a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Inline code */
+.docs-content code:not(pre code) {
+  background: hsl(var(--muted));
+  color: var(--color-brand);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Code blocks */
+.docs-content pre {
+  background: var(--color-surface) !important;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.docs-content pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Shiki code block overrides */
+.docs-content .shiki {
+  background: var(--color-surface) !important;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  overflow-x: auto;
+}
+
+/* Lists */
+.docs-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.docs-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.docs-content li {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.35rem;
+  line-height: 1.7;
+}
+
+.docs-content li strong {
+  color: hsl(var(--foreground));
+}
+
+/* Tables */
+.docs-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+}
+
+.docs-content thead {
+  border-bottom: 2px solid hsl(var(--border));
+}
+
+.docs-content th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.docs-content td {
+  padding: 0.75rem 1rem;
+  color: hsl(var(--muted-foreground));
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.docs-content tr:hover td {
+  background: hsl(var(--muted) / 0.3);
+}
+
+.docs-content td code {
+  font-size: 0.8rem;
+}
+
+/* Blockquotes */
+.docs-content blockquote {
+  border-left: 3px solid var(--color-brand);
+  padding: 0.5rem 1rem;
+  margin: 1.25rem 0;
+  background: var(--color-brand-muted);
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.docs-content blockquote p {
+  color: hsl(var(--foreground));
+  margin: 0;
+}
+
+/* Horizontal rules */
+.docs-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2.5rem 0;
+}
+
+/* Strong / Bold */
+.docs-content strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+}
+
+/* Emphasis */
+.docs-content em {
+  font-style: italic;
+}
+
+/* Images */
+.docs-content img {
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+}

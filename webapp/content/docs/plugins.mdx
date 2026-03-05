@@ -15,23 +15,22 @@ pnpm add sharp
 
 ```typescript
 import { MediaUploader } from '@fluxmedia/core';
-import { createFileValidationPlugin, createAnalyticsPlugin } from '@fluxmedia/plugins';
+import { 
+  createFileValidationPlugin,
+  createAnalyticsPlugin 
+} from '@fluxmedia/plugins';
 
 const uploader = new MediaUploader(provider);
 
 // Add plugins
-await uploader.use(
-  createFileValidationPlugin({
-    maxSize: 10 * 1024 * 1024,
-    allowedTypes: ['image/*'],
-  })
-);
+await uploader.use(createFileValidationPlugin({
+  maxSize: 10 * 1024 * 1024,
+  allowedTypes: ['image/*']
+}));
 
-await uploader.use(
-  createAnalyticsPlugin({
-    logLevel: 'info',
-  })
-);
+await uploader.use(createAnalyticsPlugin({
+  logLevel: 'info'
+}));
 ```
 
 ## Available Plugins
@@ -74,10 +73,10 @@ Extracts EXIF data, dimensions, and file hashes. Requires `sharp` as a peer depe
 import { createMetadataExtractionPlugin } from '@fluxmedia/plugins';
 
 const plugin = createMetadataExtractionPlugin({
-  extractExif: true, // EXIF data (orientation, camera, GPS)
-  extractDimensions: true, // Image width/height
-  hashFile: true, // Generate file hash
-  hashAlgorithm: 'md5', // 'md5' or 'sha256'
+  extractExif: true,        // EXIF data (orientation, camera, GPS)
+  extractDimensions: true,  // Image width/height
+  hashFile: true,           // Generate file hash
+  hashAlgorithm: 'md5',    // 'md5' or 'sha256'
 });
 ```
 
@@ -112,28 +111,20 @@ Logs and tracks upload operations with **strongly-typed events**. Environment-aw
 import { createAnalyticsPlugin, type TrackFunction } from '@fluxmedia/plugins';
 
 const plugin = createAnalyticsPlugin({
-  environment: 'production', // 'development' | 'production' | 'test' | 'all'
-  logLevel: 'info', // 'none' | 'error' | 'warn' | 'info' | 'debug'
-  trackPerformance: true, // Track upload duration and speed
-  console: true, // Log to console
+  environment: 'production',  // 'development' | 'production' | 'test' | 'all'
+  logLevel: 'info',           // 'none' | 'error' | 'warn' | 'info' | 'debug'
+  trackPerformance: true,     // Track upload duration and speed
+  console: true,              // Log to console
   // Typed track function — TypeScript verifies event/data match
   track: (event, data) => {
     // event: 'media.upload.started' | 'media.upload.completed' | 'media.delete.completed' | 'media.error'
     myAnalytics.track(event, data);
   },
   // Individual callbacks
-  onUploadStart: (file, options) => {
-    /* ... */
-  },
-  onUploadComplete: (result, durationMs) => {
-    /* ... */
-  },
-  onUploadError: (error, file) => {
-    /* ... */
-  },
-  onDelete: (id) => {
-    /* ... */
-  },
+  onUploadStart: (file, options) => { /* ... */ },
+  onUploadComplete: (result, durationMs) => { /* ... */ },
+  onUploadError: (error, file) => { /* ... */ },
+  onDelete: (id) => { /* ... */ },
 });
 ```
 
@@ -143,8 +134,8 @@ Performance metadata is automatically added to upload results when `trackPerform
 
 ```typescript
 result.metadata.performance = {
-  duration: 1234, // ms
-  uploadSpeed: 524288, // bytes/sec
+  duration: 1234,       // ms
+  uploadSpeed: 524288,  // bytes/sec
 };
 ```
 
@@ -158,38 +149,34 @@ Provides automatic retry with exponential backoff. Automatically resumes multipa
 import { createRetryPlugin, withRetry } from '@fluxmedia/plugins';
 
 // 1. Add retry plugin to enrich upload options with retry metadata
-await uploader.use(
-  createRetryPlugin({
-    maxRetries: 3,
-    retryDelay: 1000,
-    exponentialBackoff: true,
-    retryableErrors: [
-      MediaErrorCode.NETWORK_ERROR,
-      MediaErrorCode.RATE_LIMITED,
-      MediaErrorCode.UPLOAD_FAILED,
-    ],
-    onRetry: (attempt, error, delay) => {
-      console.log(`Retry ${attempt} after ${delay}ms`);
-    },
-    shouldRetry: (error, attempt) => {
-      // Custom retry logic
-      return attempt < 5;
-    },
-  })
-);
+await uploader.use(createRetryPlugin({
+  maxRetries: 3,
+  retryDelay: 1000,
+  exponentialBackoff: true,
+  retryableErrors: [
+    MediaErrorCode.NETWORK_ERROR,
+    MediaErrorCode.RATE_LIMITED,
+    MediaErrorCode.UPLOAD_FAILED,
+  ],
+  onRetry: (attempt, error, delay) => {
+    console.log(`Retry ${attempt} after ${delay}ms`);
+  },
+  shouldRetry: (error, attempt) => {
+    // Custom retry logic
+    return attempt < 5;
+  },
+}));
 
 // 2. Use withRetry for automatic retry logic with PartialUploadError resume
 const result = await withRetry(
-  (resumeContext) =>
-    uploader.upload(file, {
-      metadata: resumeContext ? { _resumeFrom: resumeContext } : {},
-    }),
+  (resumeContext) => uploader.upload(file, {
+    metadata: resumeContext ? { _resumeFrom: resumeContext } : {},
+  }),
   { maxRetries: 3, exponentialBackoff: true }
 );
 ```
 
 **Key features:**
-
 - Exponential backoff: delays double each retry (1s → 2s → 4s → ...)
 - `PartialUploadError` awareness: `withRetry` captures the upload context and passes it to the next attempt, enabling multipart upload resumption
 - Custom `shouldRetry` function for fine-grained control
@@ -204,23 +191,19 @@ const result = await withRetry(
 ```typescript
 import { createPlugin } from '@fluxmedia/core';
 
-const myPlugin = createPlugin(
-  'my-plugin',
-  {
-    beforeUpload: async (file, options) => {
-      console.log('Uploading:', file);
-      return { file, options };
-    },
-    afterUpload: async (result) => {
-      console.log('Uploaded:', result.url);
-      return result;
-    },
-    onError: async (error, context) => {
-      console.error(`Failed in ${context.phase} phase:`, error.message);
-    },
+const myPlugin = createPlugin('my-plugin', {
+  beforeUpload: async (file, options) => {
+    console.log('Uploading:', file);
+    return { file, options };
   },
-  { optional: true }
-); // Optional plugins degrade gracefully
+  afterUpload: async (result) => {
+    console.log('Uploaded:', result.url);
+    return result;
+  },
+  onError: async (error, context) => {
+    console.error(`Failed in ${context.phase} phase:`, error.message);
+  },
+}, { optional: true }); // Optional plugins degrade gracefully
 ```
 
 ### Manual Plugin Definition
@@ -231,18 +214,18 @@ import type { FluxMediaPlugin } from '@fluxmedia/core';
 const watermarkPlugin: FluxMediaPlugin = {
   name: 'watermark',
   version: '1.0.0',
-  optional: false, // Errors will propagate (default behavior)
-
+  optional: false,  // Errors will propagate (default behavior)
+  
   async init() {
     // Called when registered via uploader.use()
     console.log('Watermark plugin initialized');
   },
-
+  
   async destroy() {
     // Called when unregistered via uploader.plugins.unregister()
     console.log('Watermark plugin destroyed');
   },
-
+  
   hooks: {
     beforeUpload: async (file, options) => {
       // Add watermark to image...
@@ -269,20 +252,15 @@ When a plugin is registered with `uploader.use()`:
 Plugins with `optional: true` enable graceful degradation:
 
 ```typescript
-const plugin = createPlugin(
-  'non-critical',
-  {
-    afterUpload: async (result) => {
-      await sendToAnalytics(result); // If this throws...
-      return result;
-    },
+const plugin = createPlugin('non-critical', {
+  afterUpload: async (result) => {
+    await sendToAnalytics(result); // If this throws...
+    return result;
   },
-  { optional: true }
-); // ...the upload still succeeds
+}, { optional: true }); // ...the upload still succeeds
 ```
 
 When an optional plugin's hook throws:
-
 - The error is caught silently
 - The upload pipeline continues
 - Useful for analytics, logging, metadata extraction
@@ -325,22 +303,18 @@ When registering plugins with the same name, the last one wins:
 
 ```typescript
 // First version
-await uploader.use(
-  createPlugin('analytics', {
-    afterUpload: async (result) => {
-      sendToAnalytics('v1', result);
-      return result;
-    },
-  })
-);
+await uploader.use(createPlugin('analytics', {
+  afterUpload: async (result) => {
+    sendToAnalytics('v1', result);
+    return result;
+  },
+}));
 
 // Override with new version — previous version's destroy() is called
-await uploader.use(
-  createPlugin('analytics', {
-    afterUpload: async (result) => {
-      sendToAnalytics('v2', result); // This one runs
-      return result;
-    },
-  })
-);
+await uploader.use(createPlugin('analytics', {
+  afterUpload: async (result) => {
+    sendToAnalytics('v2', result); // This one runs
+    return result;
+  },
+}));
 ```

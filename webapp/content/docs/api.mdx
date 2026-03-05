@@ -18,11 +18,11 @@ new MediaUploader(
 
 **Parameters:**
 
-| Parameter  | Type                  | Description                                         |
-| ---------- | --------------------- | --------------------------------------------------- |
-| `provider` | `MediaProvider`       | Primary storage provider                            |
-| `plugins`  | `FluxMediaPlugin[]`   | Optional array of plugins to register               |
-| `config`   | `MediaUploaderConfig` | Optional configuration for fallback, error handling |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `provider` | `MediaProvider` | Primary storage provider |
+| `plugins` | `FluxMediaPlugin[]` | Optional array of plugins to register |
+| `config` | `MediaUploaderConfig` | Optional configuration for fallback, error handling |
 
 ### MediaUploaderConfig
 
@@ -34,28 +34,32 @@ interface MediaUploaderConfig {
 }
 ```
 
-| Option             | Type               | Description                                                                       |
-| ------------------ | ------------------ | --------------------------------------------------------------------------------- |
-| `fallbackProvider` | `MediaProvider`    | Provider to use when primary fails                                                |
+| Option | Type | Description |
+|--------|------|-------------|
+| `fallbackProvider` | `MediaProvider` | Provider to use when primary fails |
 | `fallbackOnErrors` | `MediaErrorCode[]` | Error codes that trigger fallback (default: network, rate-limit, provider errors) |
-| `onFallback`       | `function`         | Callback when fallback is triggered                                               |
+| `onFallback` | `function` | Callback when fallback is triggered |
 
 **Example:**
 
 ```typescript
 import { MediaUploader, MediaErrorCode } from '@fluxmedia/core';
 
-const uploader = new MediaUploader(primaryProvider, [analyticsPlugin], {
-  fallbackProvider: backupProvider,
-  fallbackOnErrors: [
-    MediaErrorCode.NETWORK_ERROR,
-    MediaErrorCode.RATE_LIMITED,
-    MediaErrorCode.PROVIDER_ERROR,
-  ],
-  onFallback: (error, provider) => {
-    console.warn(`Falling back to ${provider.name}: ${error.message}`);
-  },
-});
+const uploader = new MediaUploader(
+  primaryProvider,
+  [analyticsPlugin],
+  {
+    fallbackProvider: backupProvider,
+    fallbackOnErrors: [
+      MediaErrorCode.NETWORK_ERROR,
+      MediaErrorCode.RATE_LIMITED,
+      MediaErrorCode.PROVIDER_ERROR,
+    ],
+    onFallback: (error, provider) => {
+      console.warn(`Falling back to ${provider.name}: ${error.message}`);
+    },
+  }
+);
 ```
 
 ### Methods
@@ -203,24 +207,24 @@ interface UploadOptions {
   transformation?: TransformationOptions;
   onProgress?: (percent: number) => void;
   onByteProgress?: (loaded: number, total: number) => void;
-  uniqueFilename?: boolean; // Generate unique names (default: true)
-  contentType?: string; // MIME type override
-  signal?: AbortSignal; // Abort controller signal
+  uniqueFilename?: boolean;     // Generate unique names (default: true)
+  contentType?: string;         // MIME type override
+  signal?: AbortSignal;         // Abort controller signal
 }
 ```
 
-| Option           | Type                                      | Description                                    |
-| ---------------- | ----------------------------------------- | ---------------------------------------------- |
-| `folder`         | `string`                                  | Destination folder path                        |
-| `filename`       | `string`                                  | Custom filename                                |
-| `tags`           | `string[]`                                | Tags for organization                          |
-| `metadata`       | `Record<string, unknown>`                 | Custom metadata key-value pairs                |
-| `transformation` | `TransformationOptions`                   | Apply transformations on upload                |
-| `onProgress`     | `(percent: number) => void`               | Normalized 0-100 progress callback             |
-| `onByteProgress` | `(loaded: number, total: number) => void` | Raw byte-level progress callback               |
-| `uniqueFilename` | `boolean`                                 | Generate unique filenames (default: `true`)    |
-| `contentType`    | `string`                                  | Override auto-detected MIME type               |
-| `signal`         | `AbortSignal`                             | Cancel in-flight uploads via `AbortController` |
+| Option | Type | Description |
+|--------|------|-------------|
+| `folder` | `string` | Destination folder path |
+| `filename` | `string` | Custom filename |
+| `tags` | `string[]` | Tags for organization |
+| `metadata` | `Record<string, unknown>` | Custom metadata key-value pairs |
+| `transformation` | `TransformationOptions` | Apply transformations on upload |
+| `onProgress` | `(percent: number) => void` | Normalized 0-100 progress callback |
+| `onByteProgress` | `(loaded: number, total: number) => void` | Raw byte-level progress callback |
+| `uniqueFilename` | `boolean` | Generate unique filenames (default: `true`) |
+| `contentType` | `string` | Override auto-detected MIME type |
+| `signal` | `AbortSignal` | Cancel in-flight uploads via `AbortController` |
 
 ### UploadResult
 
@@ -240,19 +244,19 @@ interface UploadResult {
 }
 ```
 
-| Field        | Type                      | Description                                                               |
-| ------------ | ------------------------- | ------------------------------------------------------------------------- |
-| `id`         | `string`                  | Unique identifier for the uploaded file                                   |
-| `storageKey` | `string`                  | Provider-specific storage key (e.g., S3 object key, Cloudinary public ID) |
-| `url`        | `string`                  | Direct URL to the file                                                    |
-| `publicUrl`  | `string`                  | Public-facing URL                                                         |
-| `size`       | `number`                  | File size in bytes                                                        |
-| `format`     | `string`                  | File format/extension                                                     |
-| `width`      | `number`                  | Image width (if applicable)                                               |
-| `height`     | `number`                  | Image height (if applicable)                                              |
-| `provider`   | `string`                  | Provider name that handled the upload                                     |
-| `metadata`   | `Record<string, unknown>` | Additional metadata                                                       |
-| `createdAt`  | `Date`                    | Upload timestamp                                                          |
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Unique identifier for the uploaded file |
+| `storageKey` | `string` | Provider-specific storage key (e.g., S3 object key, Cloudinary public ID) |
+| `url` | `string` | Direct URL to the file |
+| `publicUrl` | `string` | Public-facing URL |
+| `size` | `number` | File size in bytes |
+| `format` | `string` | File format/extension |
+| `width` | `number` | Image width (if applicable) |
+| `height` | `number` | Image height (if applicable) |
+| `provider` | `string` | Provider name that handled the upload |
+| `metadata` | `Record<string, unknown>` | Additional metadata |
+| `createdAt` | `Date` | Upload timestamp |
 
 ### TransformationOptions
 
@@ -404,10 +408,12 @@ Factory function for creating consistent `MediaError` instances:
 ```typescript
 import { createMediaError, MediaErrorCode } from '@fluxmedia/core';
 
-const error = createMediaError(MediaErrorCode.UPLOAD_FAILED, 'Upload timed out', 'cloudinary', {
-  originalError: err,
-  details: { timeout: 30000 },
-});
+const error = createMediaError(
+  MediaErrorCode.UPLOAD_FAILED,
+  'Upload timed out',
+  'cloudinary',
+  { originalError: err, details: { timeout: 30000 } }
+);
 ```
 
 ### PartialUploadError
@@ -440,10 +446,9 @@ import { withRetry } from '@fluxmedia/plugins';
 
 // withRetry automatically resumes from PartialUploadContext
 const result = await withRetry(
-  (resumeContext) =>
-    uploader.upload(file, {
-      metadata: resumeContext ? { _resumeFrom: resumeContext } : {},
-    }),
+  (resumeContext) => uploader.upload(file, {
+    metadata: resumeContext ? { _resumeFrom: resumeContext } : {},
+  }),
   { maxRetries: 3, exponentialBackoff: true }
 );
 ```
@@ -458,9 +463,9 @@ const result = await withRetry(
 interface FluxMediaPlugin {
   name: string;
   version?: string;
-  optional?: boolean; // If true, errors in hooks are caught and logged
+  optional?: boolean;   // If true, errors in hooks are caught and logged
   hooks: PluginHooks;
-  init?: () => Promise<void> | void; // Called when plugin is registered
+  init?: () => Promise<void> | void;    // Called when plugin is registered
   destroy?: () => Promise<void> | void; // Called when plugin is unregistered
 }
 ```
@@ -507,15 +512,11 @@ Indicates which phase of the upload pipeline the error occurred in, available in
 ```typescript
 import { createPlugin } from '@fluxmedia/core';
 
-const myPlugin = createPlugin(
-  'my-plugin',
-  {
-    beforeUpload: async (file, options) => {
-      return { file, options };
-    },
+const myPlugin = createPlugin('my-plugin', {
+  beforeUpload: async (file, options) => {
+    return { file, options };
   },
-  { optional: true }
-);
+}, { optional: true });
 ```
 
 ---
@@ -537,7 +538,10 @@ type AnalyticsEventType =
 ### TrackFunction
 
 ```typescript
-type TrackFunction = <T extends AnalyticsEventType>(event: T, data: AnalyticsEventMap[T]) => void;
+type TrackFunction = <T extends AnalyticsEventType>(
+  event: T,
+  data: AnalyticsEventMap[T]
+) => void;
 ```
 
 ### Event Data Types
@@ -603,7 +607,6 @@ createProviderContractTests('MyProvider', () => new MyProvider({ ... }));
 ```
 
 This runs a suite of tests verifying:
-
 - Required properties (`name`, `features`)
 - Feature matrix structure (transformations, capabilities, storage)
 - All required methods exist (`upload`, `delete`, `get`, `getUrl`, `uploadMultiple`, `deleteMultiple`, `native`)

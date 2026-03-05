@@ -4,16 +4,15 @@ FluxMedia supports multiple cloud storage providers through a unified API.
 
 ## Available Providers
 
-| Provider      | Package                 | Transformations | Video Processing |
-| ------------- | ----------------------- | --------------- | ---------------- |
-| Cloudinary    | `@fluxmedia/cloudinary` | Full            | Yes              |
-| AWS S3        | `@fluxmedia/s3`         | No              | No               |
-| Cloudflare R2 | `@fluxmedia/r2`         | No              | No               |
+| Provider | Package | Transformations | Video Processing |
+|----------|---------|-----------------|------------------|
+| Cloudinary | `@fluxmedia/cloudinary` | Full | Yes |
+| AWS S3 | `@fluxmedia/s3` | No | No |
+| Cloudflare R2 | `@fluxmedia/r2` | No | No |
 
 ## Choosing a Provider
 
 ### Cloudinary
-
 Best for: **Applications needing image/video transformations**
 
 - Resize, crop, format conversion on-the-fly
@@ -22,7 +21,6 @@ Best for: **Applications needing image/video transformations**
 - Higher cost but more features
 
 ### AWS S3
-
 Best for: **Simple file storage with AWS integration**
 
 - Reliable and widely used
@@ -31,7 +29,6 @@ Best for: **Simple file storage with AWS integration**
 - Pay only for storage and transfer
 
 ### Cloudflare R2
-
 Best for: **Cost-effective storage with zero egress fees**
 
 - S3-compatible API
@@ -48,7 +45,7 @@ import type { MediaProvider, UploadResult } from '@fluxmedia/core';
 
 class MyProvider implements MediaProvider {
   name = 'my-provider';
-
+  
   features = {
     transformations: { resize: false, crop: false, ... },
     capabilities: { signedUploads: true, ... },
@@ -69,7 +66,7 @@ class MyProvider implements MediaProvider {
 }
 ```
 
-`Use contract tests to verify your provider implementation:
+Use contract tests to verify your provider implementation:
 
 ```typescript
 import { createProviderContractTests } from '@fluxmedia/core';
