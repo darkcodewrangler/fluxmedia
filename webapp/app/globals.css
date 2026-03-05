@@ -32,14 +32,14 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  /* Brand colors */
-  --color-brand: #00e5a0;
-  --color-brand-dim: #00e5a033;
-  --color-brand-muted: #00e5a01a;
-  --color-amber: #d4a843;
-  --color-amber-dim: #d4a84333;
-  --color-surface: #0d0d14;
-  --color-surface-raised: #12121c;
+  /* Brand colors — use CSS variables for light/dark switching */
+  --color-brand: var(--brand);
+  --color-brand-dim: var(--brand-dim);
+  --color-brand-muted: var(--brand-muted);
+  --color-amber: var(--amber);
+  --color-amber-dim: var(--amber-dim);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -65,6 +65,36 @@
 
 /* Dark-only design system — enterprise dev tool aesthetic */
 :root {
+  --background: 0 0% 100%;
+  --foreground: 230 25% 10%;
+  --card: 0 0% 98%;
+  --card-foreground: 230 25% 10%;
+  --popover: 0 0% 98%;
+  --popover-foreground: 230 25% 10%;
+  --primary: 160 100% 35%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 230 10% 93%;
+  --secondary-foreground: 230 25% 15%;
+  --muted: 230 10% 94%;
+  --muted-foreground: 230 10% 40%;
+  --accent: 230 10% 93%;
+  --accent-foreground: 230 25% 10%;
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 230 10% 88%;
+  --input: 230 10% 88%;
+  --ring: 160 100% 35%;
+  --radius: 0.5rem;
+  --brand: #00b37d;
+  --brand-dim: #00b37d33;
+  --brand-muted: #00b37d12;
+  --amber: #a07d20;
+  --amber-dim: #a07d2033;
+  --surface: #f4f4f6;
+  --surface-raised: #eaeaee;
+}
+
+.dark {
   --background: 230 25% 3%;
   --foreground: 0 0% 96%;
   --card: 230 20% 5.5%;
@@ -85,6 +115,13 @@
   --input: 230 15% 14%;
   --ring: 160 100% 45%;
   --radius: 0.5rem;
+  --brand: #00e5a0;
+  --brand-dim: #00e5a033;
+  --brand-muted: #00e5a01a;
+  --amber: #d4a843;
+  --amber-dim: #d4a84333;
+  --surface: #0d0d14;
+  --surface-raised: #12121c;
 }
 
 @layer base {
@@ -98,7 +135,19 @@
     color: hsl(var(--foreground));
   }
 
-  /* Force dark scrollbar */
+  /* Shiki dual-theme: light by default, dark when .dark */
+  .shiki,
+  .shiki span {
+    color: var(--shiki-light) !important;
+    background-color: transparent !important;
+  }
+
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark) !important;
+  }
+
+  /* Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;

@@ -88,11 +88,16 @@ export function CodeComparison() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
+    const shikiOpts = {
+      lang: 'typescript' as const,
+      themes: { light: 'github-light' as const, dark: 'github-dark' as const },
+      defaultColor: false as const,
+    };
     async function highlight() {
       const [old, plugin, basic] = await Promise.all([
-        codeToHtml(OLD_WAY, { lang: 'typescript', theme: 'github-dark' }),
-        codeToHtml(PLUGIN_WAY, { lang: 'typescript', theme: 'github-dark' }),
-        codeToHtml(BASIC_WAY, { lang: 'typescript', theme: 'github-dark' }),
+        codeToHtml(OLD_WAY, shikiOpts),
+        codeToHtml(PLUGIN_WAY, shikiOpts),
+        codeToHtml(BASIC_WAY, shikiOpts),
       ]);
       setOldHtml(old);
       setPluginHtml(plugin);
@@ -151,7 +156,7 @@ export function CodeComparison() {
               onClick={() => setActiveTab('plugins')}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 activeTab === 'plugins'
-                  ? 'bg-brand text-[#060609]'
+                  ? 'bg-brand text-primary-foreground'
                   : 'bg-accent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -161,7 +166,7 @@ export function CodeComparison() {
               onClick={() => setActiveTab('basic')}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 activeTab === 'basic'
-                  ? 'bg-brand text-[#060609]'
+                  ? 'bg-brand text-primary-foreground'
                   : 'bg-accent text-muted-foreground hover:text-foreground'
               }`}
             >

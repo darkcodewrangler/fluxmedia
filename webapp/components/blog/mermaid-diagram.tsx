@@ -1,44 +1,62 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import mermaid from 'mermaid';
 
 interface MermaidDiagramProps {
   chart: string;
 }
 
-// Initialize mermaid with dark theme
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  themeVariables: {
-    primaryColor: '#00e5a0',
-    primaryTextColor: '#060609',
-    primaryBorderColor: '#00c98c',
-    lineColor: '#00e5a066',
-    secondaryColor: '#0d0d14',
-    tertiaryColor: '#12121c',
-    background: '#060609',
-    mainBkg: '#0d0d14',
-    secondBkg: '#12121c',
-    nodeBorder: '#00e5a0',
-    clusterBkg: '#0d0d14',
-    clusterBorder: '#00c98c',
-    titleColor: '#f5f5f5',
-    edgeLabelBackground: '#0d0d14',
-  },
-  flowchart: {
-    htmlLabels: true,
-    curve: 'basis',
-  },
-});
+const darkThemeVars = {
+  primaryColor: '#00e5a0',
+  primaryTextColor: '#060609',
+  primaryBorderColor: '#00c98c',
+  lineColor: '#00e5a066',
+  secondaryColor: '#0d0d14',
+  tertiaryColor: '#12121c',
+  background: '#060609',
+  mainBkg: '#0d0d14',
+  secondBkg: '#12121c',
+  nodeBorder: '#00e5a0',
+  clusterBkg: '#0d0d14',
+  clusterBorder: '#00c98c',
+  titleColor: '#f5f5f5',
+  edgeLabelBackground: '#0d0d14',
+};
+
+const lightThemeVars = {
+  primaryColor: '#00b37d',
+  primaryTextColor: '#ffffff',
+  primaryBorderColor: '#009968',
+  lineColor: '#00b37d66',
+  secondaryColor: '#f4f4f6',
+  tertiaryColor: '#eaeaee',
+  background: '#ffffff',
+  mainBkg: '#f4f4f6',
+  secondBkg: '#eaeaee',
+  nodeBorder: '#00b37d',
+  clusterBkg: '#f4f4f6',
+  clusterBorder: '#009968',
+  titleColor: '#1a1a2e',
+  edgeLabelBackground: '#f4f4f6',
+};
 
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
+    const isDark = resolvedTheme === 'dark';
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: isDark ? 'dark' : 'default',
+      themeVariables: isDark ? darkThemeVars : lightThemeVars,
+      flowchart: { htmlLabels: true, curve: 'basis' },
+    });
+
     async function renderChart() {
       if (!containerRef.current || !chart) return;
 
@@ -54,7 +72,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
     }
 
     renderChart();
-  }, [chart]);
+  }, [chart, resolvedTheme]);
 
   if (error) {
     return (

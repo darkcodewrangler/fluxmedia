@@ -1,5 +1,4 @@
 /* ─── Docs Content Styles ─── */
-/* Styled to match the webapp's dark premium theme */
 
 .docs-content {
   color: hsl(var(--foreground));
@@ -75,13 +74,60 @@
   border: 1px solid hsl(var(--border));
 }
 
+/* ─── Code block wrapper (copy button host) ─── */
+.docs-content .code-block-wrapper {
+  position: relative;
+  margin: 1.25rem 0;
+}
+
+.docs-content .code-block-wrapper pre {
+  margin: 0;
+}
+
+/* Copy button */
+.docs-content .copy-btn {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+  z-index: 2;
+}
+
+.docs-content .code-block-wrapper:hover .copy-btn {
+  opacity: 1;
+}
+
+.docs-content .copy-btn:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--foreground));
+}
+
+.docs-content .copy-btn.copied {
+  opacity: 1;
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+}
+
 /* Code blocks */
 .docs-content pre {
   background: var(--color-surface) !important;
   border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
   padding: 1.25rem;
-  margin: 1.25rem 0;
   overflow-x: auto;
   font-size: 0.875rem;
   line-height: 1.7;
@@ -95,14 +141,87 @@
   color: inherit;
 }
 
-/* Shiki code block overrides */
+/* Shiki dual-theme code blocks */
 .docs-content .shiki {
   background: var(--color-surface) !important;
-  padding: 0;
+  padding: 1em;
   margin: 0;
   border-radius: 0;
   border: none;
   overflow-x: auto;
+}
+
+.docs-content .shiki,
+.docs-content .shiki span {
+  color: var(--shiki-light) !important;
+  background-color: transparent !important;
+}
+
+html.dark .docs-content .shiki,
+html.dark .docs-content .shiki span {
+  color: var(--shiki-dark) !important;
+}
+
+/* ─── Package Manager Tabs ─── */
+.docs-content .pm-tabs {
+  margin: 1.25rem 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.docs-content .pm-tabs-header {
+  display: flex;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.5);
+}
+
+.docs-content .pm-tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.docs-content .pm-tab:hover {
+  color: hsl(var(--foreground));
+}
+
+.docs-content .pm-tab.active {
+  color: var(--color-brand);
+  border-bottom-color: var(--color-brand);
+}
+
+.docs-content .pm-tab-panel {
+  display: none;
+}
+
+.docs-content .pm-tab-panel.active {
+  display: block;
+}
+
+.docs-content .pm-tab-panel pre {
+  border: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+/* Keep copy button visible on tabs wrapper too */
+.docs-content .pm-tabs .code-block-wrapper {
+  margin: 0;
+}
+
+.docs-content .pm-tabs .copy-btn {
+  top: 0.375rem;
+  right: 0.5rem;
 }
 
 /* Lists */

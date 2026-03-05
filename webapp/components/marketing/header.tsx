@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Github, UploadCloud, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Header({ stats }: { stats?: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,6 +47,7 @@ export function Header({ stats }: { stats?: React.ReactNode }) {
 
         <div className="flex flex-1 items-center justify-end space-x-3">
           {stats}
+          <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"

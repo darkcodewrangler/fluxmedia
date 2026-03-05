@@ -159,8 +159,8 @@ export function FeatureGrid() {
                   <div
                     className={`inline-flex h-11 w-11 items-center justify-center rounded-lg ${
                       feature.highlight
-                        ? 'bg-brand text-[#060609]'
-                        : 'bg-brand-muted text-brand group-hover:bg-brand group-hover:text-[#060609]'
+                        ? 'bg-brand text-primary-foreground'
+                        : 'bg-brand-muted text-brand group-hover:bg-brand group-hover:text-primary-foreground'
                     } transition-colors duration-300`}
                   >
                     <feature.icon className="h-5 w-5" />
