@@ -1,6 +1,6 @@
 {
   "name": "@fluxmedia/react",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "React hooks and components for FluxMedia - unified media uploads for React",
   "keywords": [
     "fluxmedia",

@@ -1,6 +1,6 @@
 {
     "name": "basic-node-example",
-    "version": "0.0.4",
+    "version": "2.0.0",
     "private": true,
     "type": "module",
     "description": "Basic Node.js example for FluxMedia - All Providers",
