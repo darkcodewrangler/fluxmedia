@@ -23,15 +23,13 @@ export function Hero() {
             </div>
 
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.1] mb-6">
-              One API for all{' '}
-              <br className="hidden sm:block" />
+              One API for all <br className="hidden sm:block" />
               <span className="text-brand">your media uploads</span>
             </h1>
 
             <p className="mt-4 text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-              Provider-agnostic media uploads for TypeScript. Upload to Cloudinary, S3, R2,
-              and more with a single, unified interface.
-              No lock-in. No rewrites.
+              Provider-agnostic media uploads for TypeScript. Upload to Cloudinary, S3, R2, and more
+              with a single, unified interface. No lock-in. No rewrites.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -41,7 +39,11 @@ export function Hero() {
                 </Link>
               </Button>
               <Button size="lg" variant="amber" asChild>
-                <a href="https://github.com/codewithveek/fluxmedia" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://github.com/codewithveek/fluxmedia"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Star className="mr-2 h-4 w-4" />
                   Star on GitHub
                 </a>
@@ -53,7 +55,9 @@ export function Hero() {
               <div className="terminal-window max-w-lg w-full text-left">
                 <div className="terminal-bar">
                   <div className="terminal-dots">
-                    <span /><span /><span />
+                    <span />
+                    <span />
+                    <span />
                   </div>
                   <span className="text-xs text-muted-foreground">terminal</span>
                 </div>

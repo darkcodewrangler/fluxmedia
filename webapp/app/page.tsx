@@ -1,9 +1,9 @@
-import { Hero } from "@/components/landing/hero";
-import { FeatureGrid } from "@/components/landing/feature-grid";
-import { ProvidersSection } from "@/components/landing/providers-section";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { BookOpen, Github } from "lucide-react";
+import { Hero } from '@/components/landing/hero';
+import { FeatureGrid } from '@/components/landing/feature-grid';
+import { ProvidersSection } from '@/components/landing/providers-section';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { BookOpen, Github } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -19,7 +19,8 @@ export default function Home() {
             Ready to simplify your media uploads?
           </h2>
           <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join developers building faster with FluxMedia. Get started in minutes with comprehensive docs and examples.
+            Join developers building faster with FluxMedia. Get started in minutes with
+            comprehensive docs and examples.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button size="lg" asChild>
@@ -29,7 +30,11 @@ export default function Home() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="https://github.com/codewithveek/fluxmedia" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/codewithveek/fluxmedia"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Github className="mr-2 h-4 w-4" />
                 View on GitHub
               </a>
