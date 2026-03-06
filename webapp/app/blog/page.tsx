@@ -7,7 +7,7 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="container py-16 max-w-4xl px-4 md:px-8">
+    <div className="container py-16 max-w-4xl mx-auto px-4 md:px-8">
       <div className="mb-12">
         <h1 className="text-4xl font-bold mb-4">Blog</h1>
         <p className="text-lg text-muted-foreground">

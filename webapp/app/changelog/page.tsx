@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 
 export default function ChangelogPage() {
   return (
-    <div className="container py-20 text-center max-w-2xl">
-      <div className="mb-8 p-4 rounded-lg bg-brand-muted text-brand inline-block w-16 h-16 flex items-center justify-center mx-auto">
-        <span className="text-2xl">🚀</span>
+    <div className="container py-20 text-center max-w-2xl mx-auto">
+      <div className="mb-5 p-4 rounded-lg bg-brand-muted text-brand inline-block w-16 h-16 items-center justify-center mx-auto">
+        <Clock className="h-8 w-8" />
       </div>
       <h1 className="text-4xl font-bold mb-4">Changelog</h1>
       <p className="text-muted-foreground text-lg mb-8">

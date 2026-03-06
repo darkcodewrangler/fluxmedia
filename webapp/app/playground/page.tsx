@@ -113,7 +113,7 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="px-4 lg:px-8 container py-8 flex flex-col max-w-6xl">
+    <div className="px-4 lg:px-8 container py-8 flex flex-col max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">Playground</h1>

@@ -67,7 +67,8 @@ export function getBlogPrevNext(slug: string): {
   if (idx === -1) return { prev: null, next: null };
   return {
     prev: idx > 0 ? { slug: posts[idx - 1].slug, title: posts[idx - 1].title } : null,
-    next: idx < posts.length - 1 ? { slug: posts[idx + 1].slug, title: posts[idx + 1].title } : null,
+    next:
+      idx < posts.length - 1 ? { slug: posts[idx + 1].slug, title: posts[idx + 1].title } : null,
   };
 }
 
@@ -185,6 +186,9 @@ export async function getPostContent(
   const processedContent = await remark().use(remarkGfm).use(html).process(post.content);
 
   let htmlContent = processedContent.toString();
+
+  // Remove the leading h1 — the page component renders the title separately
+  htmlContent = htmlContent.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>\s*/, '');
 
   // Apply syntax highlighting to code blocks
   htmlContent = await highlightCodeBlocks(htmlContent);

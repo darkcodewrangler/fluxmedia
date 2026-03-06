@@ -28,7 +28,7 @@ export default async function BlogPostPage({ params }: Props) {
   const { prev, next } = getBlogPrevNext(slug);
 
   return (
-    <article className="container py-12 md:py-16 max-w-3xl px-4 md:px-8" data-pagefind-body>
+    <article className="container py-12 md:py-16 max-w-4xl mx-auto px-4 md:px-8" data-pagefind-body>
       <div className="mb-10">
         <Button
           variant="ghost"

@@ -139,7 +139,7 @@
   .shiki,
   .shiki span {
     color: var(--shiki-light) !important;
-    background-color: transparent !important;
+    background: hsl(var(--color-surface));
   }
 
   html.dark .shiki,

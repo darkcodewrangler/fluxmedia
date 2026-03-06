@@ -102,39 +102,6 @@
   border: 1px solid hsl(var(--border) / 0.5);
 }
 
-.blog-content pre code {
-  background: transparent;
-  padding: 0;
-  font-size: inherit;
-}
-
-/* Shiki highlighted code override */
-.blog-content .shiki {
-  margin: 1.5rem 0;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  overflow-x: auto;
-  font-size: 0.875rem;
-  line-height: 1.7;
-  border: 1px solid hsl(var(--border) / 0.5);
-}
-
-.blog-content .shiki code {
-  background: transparent;
-}
-
-/* Shiki dual-theme support */
-.blog-content .shiki,
-.blog-content .shiki span {
-  color: var(--shiki-light) !important;
-  background-color: transparent !important;
-}
-
-html.dark .blog-content .shiki,
-html.dark .blog-content .shiki span {
-  color: var(--shiki-dark) !important;
-}
-
 /* Blockquotes */
 .blog-content blockquote {
   margin: 1.5rem 0;
