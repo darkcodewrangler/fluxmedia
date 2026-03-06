@@ -102,7 +102,7 @@ export interface FluxMediaPlugin {
    * rather than propagated. Use for analytics, logging, and metadata plugins.
    * Critical plugins (e.g. validation) should leave this false (the default).
    */
-  optional?: boolean;
+  optional?: boolean | undefined;
 }
 
 /**

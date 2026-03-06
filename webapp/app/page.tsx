@@ -4,12 +4,32 @@ import { ProvidersSection } from '@/components/landing/providers-section';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { BookOpen, Github } from 'lucide-react';
+import { codeToHtml } from 'shiki';
 
-export default function Home() {
+const UNIFIED_API_CODE = `// Same code for ANY provider!
+const uploader = new MediaUploader(
+  new S3Provider({ ... })  // or Cloudinary, R2
+);
+
+await uploader.upload(file, {
+  folder: "uploads",
+  onProgress: (p) => console.log(p)
+});`;
+
+export default async function Home() {
+  const unifiedApiCodeHtml = await codeToHtml(UNIFIED_API_CODE, {
+    lang: 'typescript',
+    themes: {
+      light: 'github-light',
+      dark: 'github-dark',
+    },
+    defaultColor: false,
+  });
+
   return (
     <>
       <Hero />
-      <FeatureGrid />
+      <FeatureGrid unifiedApiCodeHtml={unifiedApiCodeHtml} />
       <ProvidersSection />
 
       {/* CTA Section */}

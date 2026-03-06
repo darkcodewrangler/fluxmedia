@@ -12,18 +12,6 @@ import {
   Image,
 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { codeToHtml } from 'shiki';
-
-const UNIFIED_API_CODE = `// Same code for ANY provider!
-const uploader = new MediaUploader(
-  new S3Provider({ ... })  // or Cloudinary, R2
-);
-
-await uploader.upload(file, {
-  folder: "uploads",
-  onProgress: (p) => console.log(p)
-});`;
 
 const features = [
   {
@@ -95,33 +83,22 @@ const itemVariants: Variants = {
   },
 };
 
-function UnifiedApiCodeSnippet() {
-  const [highlightedCode, setHighlightedCode] = useState('');
-
-  useEffect(() => {
-    async function highlight() {
-      const html = await codeToHtml(UNIFIED_API_CODE, {
-        lang: 'typescript',
-        theme: 'github-dark',
-      });
-      setHighlightedCode(html);
-    }
-    highlight();
-  }, []);
-
+function UnifiedApiCodeSnippet({ highlightedCode }: { highlightedCode: string }) {
   return (
     <div className="mt-6 rounded-lg bg-surface border border-border p-3 overflow-hidden">
       <div
         className="text-xs font-mono overflow-x-auto [&>pre]:bg-transparent! [&>pre]:p-0 [&>pre]:m-0"
-        dangerouslySetInnerHTML={{
-          __html: highlightedCode || '<div class="text-muted-foreground text-xs">Loading...</div>',
-        }}
+        dangerouslySetInnerHTML={{ __html: highlightedCode }}
       />
     </div>
   );
 }
 
-export function FeatureGrid() {
+interface FeatureGridProps {
+  unifiedApiCodeHtml: string;
+}
+
+export function FeatureGrid({ unifiedApiCodeHtml }: FeatureGridProps) {
   return (
     <section className="py-20 lg:py-28 border-t border-border/40">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -178,7 +155,7 @@ export function FeatureGrid() {
                   >
                     {feature.description}
                   </p>
-                  {feature.hasCode && <UnifiedApiCodeSnippet />}
+                  {feature.hasCode && <UnifiedApiCodeSnippet highlightedCode={unifiedApiCodeHtml} />}
                 </div>
               </div>
             </motion.div>

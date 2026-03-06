@@ -207,7 +207,7 @@ export async function getDocBySlug(slug: string): Promise<DocPage | null> {
       return null;
     }
 
-    let fileContents = fs.readFileSync(fullPath, 'utf8');
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
     const title = extractTitle(fileContents);
 
     // 1. Extract npm2yarn blocks → markers that survive remark
