@@ -7,7 +7,23 @@ const docsDirectory = path.join(process.cwd(), 'content/docs');
 export interface DocPage {
   slug: string;
   title: string;
+  description: string;
   content: string;
+  markdown: string;
+  headings: DocHeading[];
+  sourcePath: string;
+  lastModified: string;
+}
+
+export interface DocHeading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+export interface DocSitemapEntry {
+  slug: string;
+  lastModified: Date;
 }
 
 export interface DocNavItem {
@@ -65,19 +81,118 @@ export function getDocPrevNext(slug: string): {
 }
 
 export function getAllDocSlugs(): string[] {
+  return getAllDocEntries().map((entry) => entry.slug);
+}
+
+function getDocFileName(slug: string): string {
+  return slug === '' || slug === 'index' ? 'index' : slug;
+}
+
+function getDocFilePath(slug: string): string {
+  return path.join(docsDirectory, `${getDocFileName(slug)}.mdx`);
+}
+
+function getDocSourcePath(slug: string): string {
+  return `content/docs/${getDocFileName(slug)}.mdx`;
+}
+
+function getDocLastModifiedIso(fullPath: string): string {
+  return fs.statSync(fullPath).mtime.toISOString();
+}
+
+export function getAllDocEntries(): DocSitemapEntry[] {
   if (!fs.existsSync(docsDirectory)) {
     return [];
   }
   const files = fs.readdirSync(docsDirectory);
   return files
     .filter((name) => name.endsWith('.mdx'))
-    .map((name) => name.replace(/\.mdx$/, ''))
-    .filter((name) => name !== '_meta');
+    .filter((name) => name !== '_meta.mdx')
+    .map((name) => {
+      const slug = name.replace(/\.mdx$/, '');
+      const normalizedSlug = slug === 'index' ? '' : slug;
+      const fullPath = path.join(docsDirectory, name);
+      return {
+        slug: normalizedSlug,
+        lastModified: fs.statSync(fullPath).mtime,
+      };
+    });
 }
 
 function extractTitle(content: string): string {
   const match = content.match(/^#\s+(.+)$/m);
   return match ? match[1] : 'Documentation';
+}
+
+function extractDescription(markdown: string, fallbackTitle: string): string {
+  const text = markdown
+    .replace(/^---[\s\S]*?---\s*/m, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#+\s+/gm, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^>\s?/gm, '')
+    .replace(/\|/g, ' ')
+    .replace(/\n{2,}/g, '\n\n')
+    .trim();
+
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+
+  const firstParagraph =
+    paragraphs.find((paragraph) => paragraph.length > 30 && !paragraph.startsWith('-')) ||
+    paragraphs[0] ||
+    fallbackTitle;
+
+  if (firstParagraph.length <= 165) {
+    return firstParagraph;
+  }
+
+  return `${firstParagraph.slice(0, 162).trimEnd()}...`;
+}
+
+function stripHtmlTags(input: string): string {
+  return input.replace(/<[^>]*>/g, '');
+}
+
+function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function addHeadingIdsAndCollectToc(html: string): { html: string; headings: DocHeading[] } {
+  const headingCounts = new Map<string, number>();
+  const headings: DocHeading[] = [];
+
+  const htmlWithAnchors = html.replace(
+    /<h([1-6])>([\s\S]*?)<\/h\1>/g,
+    (_, levelValue: string, innerHtml: string) => {
+      const level = Number(levelValue);
+      const headingText = decodeHtmlEntities(stripHtmlTags(innerHtml)).replace(/\s+/g, ' ').trim();
+      const baseSlug = slugifyHeading(headingText) || `section-${level}`;
+      const existingCount = headingCounts.get(baseSlug) || 0;
+      const nextCount = existingCount + 1;
+      headingCounts.set(baseSlug, nextCount);
+
+      const id = nextCount === 1 ? baseSlug : `${baseSlug}-${nextCount}`;
+      const escapedHeadingText = headingText.replace(/"/g, '&quot;');
+
+      if (level >= 2 && level <= 3) {
+        headings.push({ id, text: headingText, level });
+      }
+
+      return `<h${level} id="${id}" tabindex="-1">${innerHtml}<a class="heading-anchor" href="#${id}" aria-label="Link to ${escapedHeadingText} section"><span aria-hidden="true">#</span></a></h${level}>`;
+    }
+  );
+
+  return { html: htmlWithAnchors, headings };
 }
 
 /**
@@ -199,9 +314,7 @@ function wrapCodeBlocksWithCopy(html: string): string {
 
 export async function getDocBySlug(slug: string): Promise<DocPage | null> {
   try {
-    // Map 'index' to the main docs page
-    const fileName = slug === '' || slug === 'index' ? 'index' : slug;
-    const fullPath = path.join(docsDirectory, `${fileName}.mdx`);
+    const fullPath = getDocFilePath(slug);
 
     if (!fs.existsSync(fullPath)) {
       return null;
@@ -209,6 +322,9 @@ export async function getDocBySlug(slug: string): Promise<DocPage | null> {
 
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const title = extractTitle(fileContents);
+    const description = extractDescription(fileContents, title);
+    const lastModified = getDocLastModifiedIso(fullPath);
+    const sourcePath = getDocSourcePath(slug);
 
     // 1. Extract npm2yarn blocks → markers that survive remark
     const { markdown: preprocessed, commands: npm2yarnCommands } =
@@ -239,10 +355,19 @@ export async function getDocBySlug(slug: string): Promise<DocPage | null> {
     // 5. Wrap all code blocks (including tab panels) with copy buttons
     htmlContent = wrapCodeBlocksWithCopy(htmlContent);
 
+    // 6. Add heading ids/anchors and extract TOC entries.
+    const headingData = addHeadingIdsAndCollectToc(htmlContent);
+    htmlContent = headingData.html;
+
     return {
       slug,
       title,
+      description,
       content: htmlContent,
+      markdown: fileContents,
+      headings: headingData.headings,
+      sourcePath,
+      lastModified,
     };
   } catch {
     return null;
@@ -251,4 +376,32 @@ export async function getDocBySlug(slug: string): Promise<DocPage | null> {
 
 export function getDocNavigation(): DocNavItem[] {
   return docsNavigation;
+}
+
+function findNavPath(
+  items: DocNavItem[],
+  targetSlug: string,
+  trail: Array<{ slug: string; title: string }> = []
+): Array<{ slug: string; title: string }> | null {
+  for (const item of items) {
+    const nextTrail = [...trail, { slug: item.slug, title: item.title }];
+    if (item.slug === targetSlug && (!item.children || item.children.length === 0)) {
+      return nextTrail;
+    }
+
+    if (item.children && item.children.length > 0) {
+      const nested = findNavPath(item.children, targetSlug, nextTrail);
+      if (nested) {
+        return nested;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function getDocBreadcrumbs(slug: string): Array<{ slug: string; title: string }> {
+  const normalizedSlug = slug === 'index' ? '' : slug;
+  const path = findNavPath(docsNavigation, normalizedSlug);
+  return path || [];
 }

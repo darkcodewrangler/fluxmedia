@@ -15,12 +15,33 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FluxMedia - Unified Media Uploads for TypeScript',
+  title: {
+    default: 'FluxMedia - Unified Media Uploads for TypeScript',
+    template: '%s | FluxMedia',
+  },
   description:
     'Simplify media uploads with one unified API. FluxMedia works with Cloudinary, S3, R2, and more. TypeScript-first. Open source.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.fluxmedia.dev'),
+  applicationName: 'FluxMedia',
+  authors: [{ name: 'FluxMedia' }],
   alternates: {
     canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'FluxMedia',
+    title: 'FluxMedia - Unified Media Uploads for TypeScript',
+    description:
+      'Simplify media uploads with one unified API. FluxMedia works with Cloudinary, S3, R2, and more.',
+    images: ['/fluxmedia-logo.svg'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FluxMedia - Unified Media Uploads for TypeScript',
+    description:
+      'Simplify media uploads with one unified API. FluxMedia works with Cloudinary, S3, R2, and more.',
+    images: ['/fluxmedia-logo.svg'],
   },
   robots: {
     index: true,
