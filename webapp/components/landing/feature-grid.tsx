@@ -155,7 +155,9 @@ export function FeatureGrid({ unifiedApiCodeHtml }: FeatureGridProps) {
                   >
                     {feature.description}
                   </p>
-                  {feature.hasCode && <UnifiedApiCodeSnippet highlightedCode={unifiedApiCodeHtml} />}
+                  {feature.hasCode && (
+                    <UnifiedApiCodeSnippet highlightedCode={unifiedApiCodeHtml} />
+                  )}
                 </div>
               </div>
             </motion.div>
