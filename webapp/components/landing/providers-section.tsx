@@ -1,122 +1,95 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Cloud, Server, HardDrive, Check, X } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Check, Minus } from 'lucide-react';
 
-const providers = [
-  {
-    name: 'Cloudinary',
-    icon: Cloud,
-    features: {
-      'Image Transforms': true,
-      'Video Processing': true,
-      'AI Tagging': true,
-      'Multipart Upload': true,
-      'Direct Upload': true,
-    },
-  },
-  {
-    name: 'AWS S3',
-    icon: Server,
-    features: {
-      'Image Transforms': false,
-      'Video Processing': false,
-      'AI Tagging': false,
-      'Multipart Upload': true,
-      'Direct Upload': true,
-    },
-  },
-  {
-    name: 'Cloudflare R2',
-    icon: HardDrive,
-    features: {
-      'Image Transforms': false,
-      'Video Processing': false,
-      'AI Tagging': false,
-      'Multipart Upload': true,
-      'Direct Upload': true,
-    },
-    badge: 'No Egress Fees',
-  },
-];
+const providers = ['Cloudinary', 'AWS S3', 'Cloudflare R2'] as const;
 
-const featureLabels = [
-  'Image Transforms',
-  'Video Processing',
-  'AI Tagging',
-  'Multipart Upload',
-  'Direct Upload',
-];
+const capabilities = [
+  { label: 'Image transforms', values: [true, false, false] },
+  { label: 'Video processing', values: [true, false, false] },
+  { label: 'AI tagging', values: [true, false, false] },
+  { label: 'Multipart upload', values: [true, true, true] },
+  { label: 'Direct upload', values: [true, true, true] },
+] as const;
+
+const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export function ProvidersSection() {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <section className="py-20 lg:py-22 border-t border-border/40">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-16">
-          <p className="text-sm font-semibold uppercase tracking-wider text-brand mb-4">
-            Providers
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
-            One API, Multiple Providers
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Write your upload logic once. Use it with any provider. Same interface, same
-            reliability.
+    <section className="border-t border-border/60 py-20 lg:py-24">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-12 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Same upload call. Different backends.
+            </h2>
+            <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+              Provider-specific features stay optional. The core contract does not.
+            </p>
+          </div>
+          <p className="max-w-sm font-mono text-sm text-muted-foreground">
+            R2 ships with zero egress fees. Cloudinary carries transforms. S3 stays minimal.
           </p>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          transition={{ duration: 0.5, ease: easeOut }}
+          className="overflow-x-auto rounded-lg border border-border"
         >
-          {providers.map((provider) => (
-            <div
-              key={provider.name}
-              className="relative group rounded-xl border border-border/50 bg-card p-6 hover:border-brand/30 transition-all duration-300"
-            >
-              {provider.badge && (
-                <div className="absolute -top-3 right-4 px-3 py-1 text-xs font-medium rounded-md bg-brand-muted text-brand border border-brand/20">
-                  {provider.badge}
-                </div>
-              )}
-
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-brand-muted text-brand mb-4">
-                <provider.icon className="h-5 w-5" />
-              </div>
-
-              <h3 className="text-xl font-semibold mb-4">{provider.name}</h3>
-
-              <ul className="space-y-2.5">
-                {featureLabels.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2.5 text-sm">
-                    {provider.features[feature as keyof typeof provider.features] ? (
-                      <Check className="h-4 w-4 text-brand" />
-                    ) : (
-                      <X className="h-4 w-4 text-muted-foreground/40" />
-                    )}
-                    <span
-                      className={
-                        provider.features[feature as keyof typeof provider.features]
-                          ? 'text-foreground'
-                          : 'text-muted-foreground'
-                      }
-                    >
-                      {feature}
-                    </span>
-                  </li>
+          <table className="w-full min-w-[640px] border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface-raised">
+                <th scope="col" className="px-5 py-4 font-medium text-muted-foreground">
+                  Capability
+                </th>
+                {providers.map((name) => (
+                  <th
+                    key={name}
+                    scope="col"
+                    className="px-5 py-4 font-display text-base font-semibold text-foreground"
+                  >
+                    {name}
+                  </th>
                 ))}
-              </ul>
-            </div>
-          ))}
+              </tr>
+            </thead>
+            <tbody>
+              {capabilities.map((row, rowIndex) => (
+                <tr
+                  key={row.label}
+                  className={rowIndex % 2 === 0 ? 'bg-background' : 'bg-surface/50'}
+                >
+                  <th scope="row" className="px-5 py-3.5 font-medium text-foreground">
+                    {row.label}
+                  </th>
+                  {row.values.map((supported, colIndex) => (
+                    <td key={colIndex} className="px-5 py-3.5">
+                      <span className="sr-only">
+                        {supported ? 'Supported' : 'Not supported'}
+                      </span>
+                      {supported ? (
+                        <Check className="h-4 w-4 text-brand" aria-hidden />
+                      ) : (
+                        <Minus className="h-4 w-4 text-muted-foreground/40" aria-hidden />
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </motion.div>
 
-        <div className="mt-12 text-center text-sm text-muted-foreground">
-          All providers support the same unified upload API. Provider-specific features are
-          automatically detected.
-        </div>
+        <p className="mt-8 max-w-prose text-sm leading-relaxed text-muted-foreground">
+          FluxMedia normalizes uploads across providers. Reach for native SDK features only when
+          you need provider-specific behavior.
+        </p>
       </div>
     </section>
   );

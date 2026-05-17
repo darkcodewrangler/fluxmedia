@@ -2,90 +2,77 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, Package } from 'lucide-react';
+import { ArrowRight, Github } from 'lucide-react';
 import { CodeComparison } from './code-comparison';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
+
+const easeOut = [0.16, 1, 0.3, 1] as const;
 
 export function Hero() {
+  const reduceMotion = useReducedMotion();
+
   return (
-    <section className="relative overflow-hidden grid-bg">
-      <div className="container relative z-10 mx-auto px-4 max-w-7xl pt-20 pb-24 lg:pt-24 lg:pb-30">
-        <div className="mx-auto max-w-3xl text-center mb-16">
+    <section className="relative overflow-hidden border-b border-border/60">
+      <div className="pointer-events-none absolute inset-0 grid-bg" aria-hidden />
+
+      <div className="container relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-14 lg:pb-24 lg:pt-20">
+        <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16 xl:gap-20">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.55, ease: easeOut }}
+            className="max-w-xl"
           >
-            {/* Badge */}
-            <div className="inline-flex items-center rounded-md border border-brand/20 bg-brand-muted px-3.5 py-1.5 text-sm font-medium text-brand mb-10">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-brand mr-2" />
-              Open Source TypeScript Library
-            </div>
-
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-[1.1] mb-6">
-              One API for all <br className="hidden sm:block" />
-              <span className="text-brand">your media uploads</span>
-            </h1>
-
-            <p className="mt-4 text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-              Simplify media uploads in TypeScript. A unified, type-safe interface for Cloudinary,
-              S3, R2, and more — so you can focus on building features, not wrangling SDKs.
+            <p className="mb-6 font-mono text-sm text-brand">
+              open source · typescript · MIT
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <h1 className="font-display text-[clamp(2.5rem,5vw,4.25rem)] font-bold leading-[1.05] tracking-tight text-foreground">
+              Write uploads once.
+              <span className="mt-2 block text-brand">Run them anywhere.</span>
+            </h1>
+
+            <p className="mt-6 max-w-[42ch] text-lg leading-relaxed text-muted-foreground">
+              One type-safe API for Cloudinary, S3, R2, and the providers you add next.
+              Less SDK noise, more feature work.
+            </p>
+
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button size="lg" asChild>
                 <Link href="/docs">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                  Read the docs
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="amber" asChild>
+              <Button size="lg" variant="outline" asChild>
                 <a
                   href="https://github.com/codewithveek/fluxmedia"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Star className="mr-2 h-4 w-4" />
-                  Star on GitHub
+                  <Github className="mr-2 h-4 w-4" />
+                  View source
                 </a>
               </Button>
             </div>
 
-            {/* Install command — terminal style */}
-            <div className="mt-16 flex justify-center">
-              <div className="terminal-window max-w-lg w-full text-left">
-                <div className="terminal-bar">
-                  <div className="terminal-dots">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <span className="text-xs text-muted-foreground">terminal</span>
-                </div>
-                <div className="terminal-body">
-                  <p className="comment"># Install FluxMedia</p>
-                  <p>
-                    <span className="prompt">$ </span>
-                    <span className="cmd">pnpm add @fluxmedia/core @fluxmedia/s3</span>
-                  </p>
-                </div>
-              </div>
+            <div className="mt-10 rounded-md border border-border bg-surface px-4 py-3 font-mono text-[0.8125rem]">
+              <span className="text-muted-foreground">$ </span>
+              <span className="text-foreground">pnpm add @fluxmedia/core @fluxmedia/s3</span>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, ease: easeOut, delay: 0.08 }}
+            className="min-w-0"
+          >
+            <CodeComparison />
+          </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-        >
-          <CodeComparison />
-        </motion.div>
-      </div>
-
-      {/* Subtle glow — no heavy gradient blobs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-[600px] h-[400px] opacity-15 pointer-events-none">
-        <div className="absolute inset-0 bg-brand rounded-full blur-[160px]" />
       </div>
     </section>
   );
 }
+

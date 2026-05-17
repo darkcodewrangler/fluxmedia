@@ -1,38 +1,37 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  /* Brand colors — use CSS variables for light/dark switching */
   --color-brand: var(--brand);
   --color-brand-dim: var(--brand-dim);
   --color-brand-muted: var(--brand-muted);
@@ -41,8 +40,12 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
 
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  --animate-accordion-down: accordion-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-accordion-up: accordion-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   @keyframes accordion-down {
     from {
@@ -63,83 +66,84 @@
   }
 }
 
-/* Dark-only design system — enterprise dev tool aesthetic */
+/* Light: documentation in a bright office */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 230 25% 10%;
-  --card: 0 0% 98%;
-  --card-foreground: 230 25% 10%;
-  --popover: 0 0% 98%;
-  --popover-foreground: 230 25% 10%;
-  --primary: 160 100% 35%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 230 10% 93%;
-  --secondary-foreground: 230 25% 15%;
-  --muted: 230 10% 94%;
-  --muted-foreground: 230 10% 40%;
-  --accent: 230 10% 93%;
-  --accent-foreground: 230 25% 10%;
-  --destructive: 0 62% 50%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 230 10% 88%;
-  --input: 230 10% 88%;
-  --ring: 160 100% 35%;
-  --radius: 0.5rem;
-  --brand: #02865e;
-  --brand-dim: #02865e33;
-  --brand-muted: #02865e12;
-  --amber: #a07d20;
-  --amber-dim: #a07d2033;
-  --surface: #f4f4f6;
-  --surface-raised: #eaeaee;
+  --background: oklch(0.985 0.006 265);
+  --foreground: oklch(0.2 0.025 265);
+  --card: oklch(0.97 0.008 265);
+  --card-foreground: oklch(0.2 0.025 265);
+  --popover: oklch(0.97 0.008 265);
+  --popover-foreground: oklch(0.2 0.025 265);
+  --primary: oklch(0.52 0.14 165);
+  --primary-foreground: oklch(0.98 0.006 165);
+  --secondary: oklch(0.94 0.01 265);
+  --secondary-foreground: oklch(0.28 0.025 265);
+  --muted: oklch(0.95 0.008 265);
+  --muted-foreground: oklch(0.48 0.02 265);
+  --accent: oklch(0.93 0.012 265);
+  --accent-foreground: oklch(0.2 0.025 265);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.98 0.006 25);
+  --border: oklch(0.88 0.012 265);
+  --input: oklch(0.88 0.012 265);
+  --ring: oklch(0.52 0.14 165);
+  --radius: 0.375rem;
+  --brand: oklch(0.52 0.14 165);
+  --brand-dim: oklch(0.52 0.14 165 / 0.2);
+  --brand-muted: oklch(0.52 0.14 165 / 0.1);
+  --amber: oklch(0.62 0.12 85);
+  --amber-dim: oklch(0.62 0.12 85 / 0.2);
+  --surface: oklch(0.96 0.008 265);
+  --surface-raised: oklch(0.93 0.01 265);
 }
 
+/* Dark: late-night IDE session, dual monitors */
 .dark {
-  --background: 230 25% 3%;
-  --foreground: 0 0% 96%;
-  --card: 230 20% 5.5%;
-  --card-foreground: 0 0% 96%;
-  --popover: 230 20% 5.5%;
-  --popover-foreground: 0 0% 96%;
-  --primary: 160 100% 45%;
-  --primary-foreground: 230 25% 3%;
-  --secondary: 230 15% 12%;
-  --secondary-foreground: 0 0% 85%;
-  --muted: 230 15% 10%;
-  --muted-foreground: 230 10% 55%;
-  --accent: 230 15% 12%;
-  --accent-foreground: 0 0% 96%;
-  --destructive: 0 62% 50%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 230 15% 14%;
-  --input: 230 15% 14%;
-  --ring: 160 100% 45%;
-  --radius: 0.5rem;
-  --brand: #00e5a0;
-  --brand-dim: #00e5a033;
-  --brand-muted: #00e5a01a;
-  --amber: #d4a843;
-  --amber-dim: #d4a84333;
-  --surface: #0d0d14;
-  --surface-raised: #12121c;
+  --background: oklch(0.14 0.02 265);
+  --foreground: oklch(0.94 0.008 265);
+  --card: oklch(0.17 0.022 265);
+  --card-foreground: oklch(0.94 0.008 265);
+  --popover: oklch(0.17 0.022 265);
+  --popover-foreground: oklch(0.94 0.008 265);
+  --primary: oklch(0.78 0.16 165);
+  --primary-foreground: oklch(0.14 0.02 165);
+  --secondary: oklch(0.22 0.025 265);
+  --secondary-foreground: oklch(0.82 0.01 265);
+  --muted: oklch(0.2 0.022 265);
+  --muted-foreground: oklch(0.58 0.02 265);
+  --accent: oklch(0.22 0.025 265);
+  --accent-foreground: oklch(0.94 0.008 265);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.98 0.006 25);
+  --border: oklch(0.26 0.025 265);
+  --input: oklch(0.26 0.025 265);
+  --ring: oklch(0.78 0.16 165);
+  --radius: 0.375rem;
+  --brand: oklch(0.78 0.16 165);
+  --brand-dim: oklch(0.78 0.16 165 / 0.22);
+  --brand-muted: oklch(0.78 0.16 165 / 0.12);
+  --amber: oklch(0.78 0.12 85);
+  --amber-dim: oklch(0.78 0.12 85 / 0.22);
+  --surface: oklch(0.16 0.02 265);
+  --surface-raised: oklch(0.19 0.022 265);
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
-    outline-color: hsl(var(--ring));
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: 'ss01' on, 'cv01' on;
   }
 
-  /* Shiki dual-theme: light by default, dark when .dark */
   .shiki,
   .shiki span {
     color: var(--shiki-light) !important;
-    background: hsl(var(--color-surface));
+    background: var(--surface) !important;
   }
 
   html.dark .shiki,
@@ -147,7 +151,6 @@
     color: var(--shiki-dark) !important;
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -156,85 +159,87 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
+    background: var(--border);
     border-radius: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* ─── Subtle grid background ─── */
+.font-display {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, sans-serif;
+}
+
+/* Spec-sheet grid: structure without card chrome */
 .grid-bg {
   background-image:
-    linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
-  background-size: 64px 64px;
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, oklch(0 0 0 / 0.85), transparent 92%);
 }
 
-/* ─── Corner bracket decoration for cards ─── */
-.bracket-border {
-  position: relative;
-}
-.bracket-border::before,
-.bracket-border::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  pointer-events: none;
-}
-.bracket-border::before {
-  top: -1px;
-  left: -1px;
-  border-top: 2px solid var(--color-brand);
-  border-left: 2px solid var(--color-brand);
-}
-.bracket-border::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 2px solid var(--color-brand);
-  border-right: 2px solid var(--color-brand);
-}
-
-/* ─── Terminal window chrome ─── */
 .terminal-window {
-  background: var(--color-surface);
-  border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
 }
+
 .terminal-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid hsl(var(--border));
-  background: hsl(var(--border) / 0.3);
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
 }
+
 .terminal-dots {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
+
 .terminal-dots span {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: var(--muted-foreground);
+  opacity: 0.35;
 }
+
 .terminal-body {
-  padding: 1.25rem;
+  padding: 1rem 1.25rem;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.875rem;
-  line-height: 1.75;
+  font-size: 0.8125rem;
+  line-height: 1.7;
 }
+
 .terminal-body .prompt {
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
 }
+
 .terminal-body .cmd {
-  color: hsl(var(--foreground));
-  font-weight: 600;
+  color: var(--foreground);
+  font-weight: 500;
 }
+
 .terminal-body .comment {
-  color: hsl(var(--muted-foreground) / 0.6);
+  color: var(--muted-foreground);
+  opacity: 0.7;
 }
-.terminal-body .success {
-  color: var(--color-brand);
+
+.manifest-index {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }

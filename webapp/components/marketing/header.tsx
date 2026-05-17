@@ -27,19 +27,18 @@ export function Header({ stats }: { stats?: React.ReactNode }) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background">
       <div className="container flex h-14 max-w-screen-2xl items-center px-4 md:px-6">
         <Link href="/" className="mr-8 flex items-center space-x-2.5">
           <FluxMediaLogo />
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm">
+        <nav className="hidden items-center space-x-6 text-sm md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </Link>
@@ -54,7 +53,7 @@ export function Header({ stats }: { stats?: React.ReactNode }) {
             variant="ghost"
             size="icon"
             asChild
-            className="hidden sm:inline-flex text-muted-foreground hover:text-foreground"
+            className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
           >
             <Link href="https://github.com/codewithveek/fluxmedia" target="_blank" rel="noreferrer">
               <Github className="h-4 w-4" />
@@ -65,7 +64,7 @@ export function Header({ stats }: { stats?: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-muted-foreground"
+            className="text-muted-foreground md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -74,26 +73,25 @@ export function Header({ stats }: { stats?: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border/40 bg-background">
-          <nav className="container flex flex-col py-4 px-4 space-y-1">
+        <div className="border-t border-border/60 bg-background md:hidden">
+          <nav className="container flex flex-col space-y-1 px-4 py-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground hover:text-foreground py-2.5 px-3 rounded-md hover:bg-accent transition-colors"
+                className="rounded-md px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2 mt-2 border-t border-border/40">
+            <div className="mt-2 border-t border-border/40 pt-2">
               <Link
                 href="https://github.com/codewithveek/fluxmedia"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center space-x-2 text-sm text-muted-foreground py-2.5 px-3"
+                className="flex items-center space-x-2 px-3 py-2.5 text-sm text-muted-foreground"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Github className="h-4 w-4" />

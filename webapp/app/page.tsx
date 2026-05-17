@@ -3,10 +3,10 @@ import { FeatureGrid } from '@/components/landing/feature-grid';
 import { ProvidersSection } from '@/components/landing/providers-section';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { BookOpen, Github } from 'lucide-react';
+import { ArrowRight, Github } from 'lucide-react';
 import { codeToHtml } from 'shiki';
 
-const UNIFIED_API_CODE = `// Same code for ANY provider!
+const UNIFIED_API_CODE = `// Same code for ANY provider
 const uploader = new MediaUploader(
   new S3Provider({ ... })  // or Cloudinary, R2
 );
@@ -32,21 +32,22 @@ export default async function Home() {
       <FeatureGrid unifiedApiCodeHtml={unifiedApiCodeHtml} />
       <ProvidersSection />
 
-      {/* CTA Section */}
-      <section className="py-20 lg:py-28 border-t border-border/40 grid-bg">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
-            Ready to simplify your media uploads?
-          </h2>
-          <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join developers building faster with FluxMedia. Get started in minutes with
-            comprehensive docs and examples.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <section className="border-t border-border/60 bg-surface py-20 lg:py-24">
+        <div className="container mx-auto flex max-w-7xl flex-col gap-8 px-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Ship your first upload in minutes
+            </h2>
+            <p className="mt-3 text-lg leading-relaxed text-muted-foreground">
+              Docs, examples, and a playground. Everything you need to wire FluxMedia into your
+              stack tonight.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button size="lg" asChild>
               <Link href="/docs">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Read the Docs
+                Open documentation
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
@@ -56,7 +57,7 @@ export default async function Home() {
                 rel="noopener noreferrer"
               >
                 <Github className="mr-2 h-4 w-4" />
-                View on GitHub
+                Star on GitHub
               </a>
             </Button>
           </div>

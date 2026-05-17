@@ -1,116 +1,71 @@
 import Link from 'next/link';
 import { FluxMediaLogo } from '@/components/brand/fluxmedia-logo';
 
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      { href: '/docs', label: 'Documentation' },
+      { href: '/playground', label: 'Playground' },
+      { href: '/changelog', label: 'Changelog' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { href: '/blog', label: 'Blog' },
+      { href: 'https://github.com/codewithveek/fluxmedia', label: 'GitHub' },
+      { href: 'https://www.npmjs.com/package/@fluxmedia/core', label: 'NPM' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/privacy', label: 'Privacy Policy' },
+      { href: '/terms', label: 'Terms of Service' },
+      { href: '/license', label: 'MIT License' },
+    ],
+  },
+];
+
 export function Footer() {
   return (
-    <footer className="border-t border-border/60 bg-surface pt-16 pb-10 px-4 md:px-6">
-      <div className="container max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
-          <div className="col-span-2 md:col-span-1 space-y-4">
-            <div className="flex items-center space-x-2.5">
-              <FluxMediaLogo />
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-60">
-              Simplify every upload. The TypeScript-first media library for modern applications.
+    <footer className="border-t border-border/60 bg-surface px-4 pb-10 pt-14 md:px-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="flex flex-col gap-12 lg:flex-row lg:justify-between">
+          <div className="max-w-xs space-y-4">
+            <FluxMediaLogo />
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              TypeScript-first media uploads with one API across Cloudinary, S3, R2, and more.
             </p>
           </div>
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-              Product
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/docs"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/playground"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Playground
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/changelog"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Changelog
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-              Resources
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://github.com/codewithveek/fluxmedia"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  GitHub
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://www.npmjs.com/package/@fluxmedia/core"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  NPM
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-              Legal
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/license"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  MIT License
-                </Link>
-              </li>
-            </ul>
+
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 sm:gap-14">
+            {columns.map((col) => (
+              <div key={col.title}>
+                <h4 className="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {col.title}
+                </h4>
+                <ul className="space-y-2.5 text-sm">
+                  {col.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="mt-14 pt-6 border-t border-border/40 text-xs text-muted-foreground text-center">
+
+        <p className="mt-14 border-t border-border/50 pt-6 text-center text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} FluxMedia Contributors. Built with TypeScript.
-        </div>
+        </p>
       </div>
     </footer>
   );
