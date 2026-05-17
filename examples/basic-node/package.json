@@ -9,13 +9,14 @@
         "dev": "node --watch index.js"
     },
     "dependencies": {
-        "@fluxmedia/core": "workspace:*",
-        "@fluxmedia/cloudinary": "workspace:*",
-        "@fluxmedia/r2": "workspace:*",
-        "@fluxmedia/s3": "workspace:*",
+        "@fluxmedia/core": "latest",
+        "@fluxmedia/cloudinary": "latest",
+        "@fluxmedia/r2": "latest",
+        "@fluxmedia/s3": "latest",
         "@aws-sdk/client-s3": "^3.980.0",
         "@aws-sdk/lib-storage": "^3.980.0",
         "cloudinary": "^2.9.0",
         "dotenv": "^16.4.1"
-    }
+    },
+    "packageManager": "pnpm@9.x"
 }
