@@ -73,8 +73,10 @@ export function DocsToc({ headings, editUrl, feedbackUrl, lastUpdated }: DocsToc
     <aside className="hidden xl:block">
       <div className="sticky top-24">
         <div className="flex min-h-0 flex-col gap-6 max-h-[calc(100vh-8rem)]">
-          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-border/70 bg-card/50 p-4">
-            <h2 className="text-sm font-semibold text-foreground">On This Page</h2>
+          <div className="flex min-h-0 flex-1 flex-col rounded-md border border-border bg-surface p-4">
+            <h2 className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+              On this page
+            </h2>
 
             <nav className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1 pb-3">
               <ul className="space-y-1.5">
@@ -83,11 +85,11 @@ export function DocsToc({ headings, editUrl, feedbackUrl, lastUpdated }: DocsToc
                     <a
                       href={`#${heading.id}`}
                       className={cn(
-                        'block border-l pl-3 text-sm leading-5 transition-colors',
-                        heading.level === 3 ? 'ml-3' : '',
+                        'block rounded-sm px-2.5 py-1.5 text-sm leading-5 transition-colors',
+                        heading.level === 3 ? 'pl-5' : '',
                         activeHeadingId === heading.id
-                          ? 'border-brand text-brand'
-                          : 'border-transparent text-muted-foreground hover:text-foreground'
+                          ? 'bg-brand-muted font-medium text-brand'
+                          : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
                       )}
                     >
                       {heading.text}
@@ -109,7 +111,7 @@ export function DocsToc({ headings, editUrl, feedbackUrl, lastUpdated }: DocsToc
             ) : null}
           </div>
 
-          <div className="shrink-0 rounded-lg border border-border/70 bg-card/50 p-4 text-sm">
+          <div className="shrink-0 rounded-md border border-border bg-surface p-4 text-sm">
             <a
               href={feedbackUrl}
               target="_blank"

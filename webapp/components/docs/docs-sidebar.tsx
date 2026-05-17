@@ -59,7 +59,7 @@ function NavItem({ item, depth = 0 }: { item: DocNavItem; depth?: number }) {
       <div className="space-y-1">
         <span
           className={cn(
-            'text-xs font-semibold uppercase tracking-wider block py-2',
+            'block py-2 font-mono text-xs tracking-wide',
             isParentActive ? 'text-brand' : 'text-muted-foreground'
           )}
           style={{ paddingLeft: `${depth * 12}px` }}
@@ -99,11 +99,11 @@ export function DocsSidebar({ navigation }: DocsSidebarProps) {
   );
 
   return (
-    <nav className="space-y-3 pr-4 border-r border-r-border">
+    <nav className="space-y-3 border-r border-border/60 pr-6">
       <div>
         <label
           htmlFor="docs-filter"
-          className="mb-1 block text-xs font-medium text-muted-foreground"
+          className="mb-1 block font-mono text-xs text-muted-foreground"
         >
           Search docs
         </label>

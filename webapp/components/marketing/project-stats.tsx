@@ -5,7 +5,7 @@ export async function ProjectStats() {
   const { stars, downloads } = await getProjectMetrics();
 
   return (
-    <div className="hidden md:flex items-center space-x-3 text-xs font-medium text-muted-foreground bg-surface-raised px-3 py-1.5 rounded-md border border-border/40">
+    <div className="hidden items-center space-x-3 rounded-sm border border-border bg-surface px-3 py-1.5 font-mono text-xs text-muted-foreground md:flex">
       <a
         href="https://github.com/codewithveek/fluxmedia"
         target="_blank"

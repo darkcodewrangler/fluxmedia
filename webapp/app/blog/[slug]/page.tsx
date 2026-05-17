@@ -28,8 +28,8 @@ export default async function BlogPostPage({ params }: Props) {
   const { prev, next } = getBlogPrevNext(slug);
 
   return (
-    <article className="container py-12 md:py-16 max-w-4xl mx-auto px-4 md:px-8" data-pagefind-body>
-      <div className="mb-10">
+    <article className="container mx-auto max-w-3xl px-4 py-12 md:py-16" data-pagefind-body>
+      <header className="mb-10">
         <Button
           variant="ghost"
           size="sm"
@@ -38,11 +38,11 @@ export default async function BlogPostPage({ params }: Props) {
         >
           <Link href="/blog">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blog
+            Back to blog
           </Link>
         </Button>
 
-        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
+        <div className="mb-6 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4" />
             {new Date(meta.date).toLocaleDateString('en-US', {
@@ -64,21 +64,23 @@ export default async function BlogPostPage({ params }: Props) {
           )}
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">{meta.title}</h1>
+        <h1 className="font-display text-[clamp(2rem,4vw,2.75rem)] font-bold leading-tight tracking-tight">
+          {meta.title}
+        </h1>
 
         {meta.tags && (
-          <div className="flex flex-wrap gap-2">
+          <ul className="mt-6 flex flex-wrap gap-2">
             {meta.tags.map((tag) => (
-              <span
+              <li
                 key={tag}
-                className="px-3 py-1 text-sm rounded-md bg-brand-muted text-brand font-medium"
+                className="rounded-sm bg-brand-muted px-2 py-0.5 font-mono text-xs text-brand"
               >
                 {tag}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </div>
+      </header>
 
       <BlogContent htmlContent={htmlContent} />
 

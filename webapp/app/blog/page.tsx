@@ -7,69 +7,65 @@ export default function BlogPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="container py-16 max-w-4xl mx-auto px-4 md:px-8">
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold mb-4">Blog</h1>
-        <p className="text-lg text-muted-foreground">
-          Guides, tutorials, and deep dives into FluxMedia.
-        </p>
-      </div>
+    <div className="container mx-auto max-w-3xl px-4 py-14 lg:py-20">
+      <header className="page-header">
+        <p className="page-kicker">engineering notes</p>
+        <h1>Blog</h1>
+        <p>Guides and deep dives on plugins, providers, and the unified upload API.</p>
+      </header>
 
       {posts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground mb-6">No posts yet. Check back soon!</p>
+        <div className="py-12 text-center">
+          <p className="mb-6 text-muted-foreground">No posts yet. Check back soon.</p>
           <Button variant="outline" asChild>
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back Home
+              Back home
             </Link>
           </Button>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="content-list">
           {posts.map((post) => (
-            <article
-              key={post.slug}
-              className="group rounded-xl border border-border/50 bg-card p-6 hover:border-brand/30 transition-all duration-300"
-            >
-              <Link href={`/blog/${post.slug}`} className="block">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
+            <article key={post.slug}>
+              <Link href={`/blog/${post.slug}`} className="group block">
+                <div className="mb-2 flex flex-wrap items-center gap-4 font-mono text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
                     })}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
                     {post.readingTime}
                   </span>
                 </div>
 
-                <h2 className="text-xl font-semibold mb-2 group-hover:text-brand transition-colors">
+                <h2 className="text-xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-brand">
                   {post.title}
                 </h2>
 
-                <p className="text-muted-foreground mb-4">{post.excerpt}</p>
+                <p className="mt-2 leading-relaxed text-muted-foreground">{post.excerpt}</p>
 
-                {post.tags && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                {post.tags && post.tags.length > 0 && (
+                  <ul className="mt-3 flex flex-wrap gap-2">
                     {post.tags.map((tag) => (
-                      <span
+                      <li
                         key={tag}
-                        className="px-2 py-1 text-xs rounded-md bg-brand-muted text-brand"
+                        className="rounded-sm bg-brand-muted px-2 py-0.5 font-mono text-xs text-brand"
                       >
                         {tag}
-                      </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
 
-                <span className="inline-flex items-center text-sm font-medium text-brand">
-                  Read more{' '}
-                  <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                <span className="mt-4 inline-flex items-center text-sm font-medium text-brand">
+                  Read post
+                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>
             </article>

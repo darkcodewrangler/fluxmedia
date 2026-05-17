@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 interface ChangelogEntry {
   version: string;
@@ -17,8 +17,8 @@ const changelog: ChangelogEntry[] = [
     date: 'Mar 5, 2026',
     title: 'Retry Resume & Stream Uploads',
     features: [
-      'PartialUploadError support — resume uploads from the last known state',
-      'withRetry now accepts an optional resumeContext parameter for retry attempts',
+      'PartialUploadError support: resume uploads from the last known state',
+      'withRetry accepts an optional resumeContext parameter for retry attempts',
       'R2 and S3 providers accept UploadInput (streams) in upload methods',
       'Multipart uploads retain parts for potential resume when retry is enabled',
       'Content type detection based on input type, skipping magic-byte detection for streams',
@@ -62,13 +62,15 @@ const changelog: ChangelogEntry[] = [
   },
 ];
 
-function EntrySection({ label, items, color }: { label: string; items: string[]; color: string }) {
+function EntryList({ label, items }: { label: string; items: string[] }) {
   return (
     <div className="mt-4">
-      <h3 className={`text-sm font-semibold mb-2 ${color}`}>{label}</h3>
-      <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm">
+      <h3 className="mb-2 font-mono text-xs text-brand">{label}</h3>
+      <ul className="space-y-1.5 text-sm leading-relaxed text-muted-foreground">
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item} className="pl-4 before:relative before:-left-4 before:content-['—']">
+            {item}
+          </li>
         ))}
       </ul>
     </div>
@@ -77,49 +79,40 @@ function EntrySection({ label, items, color }: { label: string; items: string[];
 
 export default function ChangelogPage() {
   return (
-    <div className="container py-20 max-w-2xl mx-auto px-4">
-      <div className="text-center mb-12">
-        <div className="mb-5 p-4 rounded-lg bg-brand-muted text-brand inline-flex w-16 h-16 items-center justify-center mx-auto">
-          <Clock className="h-8 w-8" />
-        </div>
-        <h1 className="text-4xl font-bold mb-4">Changelog</h1>
-        <p className="text-muted-foreground text-lg">
-          Track the latest updates and improvements to FluxMedia.
-        </p>
-      </div>
+    <div className="container mx-auto max-w-2xl px-4 py-14 lg:py-20">
+      <header className="page-header">
+        <p className="page-kicker">release history</p>
+        <h1>Changelog</h1>
+        <p>What shipped, when, and what it means for your upload stack.</p>
+      </header>
 
-      <div className="space-y-8">
+      <div className="content-list">
         {changelog.map((entry) => (
-          <div
-            key={entry.version}
-            className="group rounded-xl border border-border bg-card p-6 text-left transition-all hover:border-brand/30"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-brand-muted text-brand px-3 py-1 rounded-md text-xs font-semibold">
-                {entry.version}
-              </div>
-              <span className="text-sm text-muted-foreground">{entry.date}</span>
+          <article key={entry.version}>
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <span className="font-mono text-sm font-medium text-brand">{entry.version}</span>
+              <time className="font-mono text-xs text-muted-foreground">{entry.date}</time>
             </div>
-            <h2 className="text-xl font-semibold mb-1">{entry.title}</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">{entry.title}</h2>
 
             {entry.features && entry.features.length > 0 && (
-              <EntrySection label="Features" items={entry.features} color="text-emerald-500" />
+              <EntryList label="Features" items={entry.features} />
             )}
             {entry.fixes && entry.fixes.length > 0 && (
-              <EntrySection label="Bug Fixes" items={entry.fixes} color="text-red-400" />
+              <EntryList label="Fixes" items={entry.fixes} />
             )}
             {entry.improvements && entry.improvements.length > 0 && (
-              <EntrySection label="Improvements" items={entry.improvements} color="text-blue-400" />
+              <EntryList label="Improvements" items={entry.improvements} />
             )}
-          </div>
+          </article>
         ))}
       </div>
 
-      <div className="text-center mt-10">
+      <div className="mt-12">
         <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back Home
+            Back home
           </Link>
         </Button>
       </div>
