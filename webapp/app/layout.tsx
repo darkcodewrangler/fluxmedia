@@ -10,19 +10,19 @@ import { Analytics } from '@vercel/analytics/react';
 
 const sourceSans = Source_Sans_3({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--family-sans',
   display: 'swap',
 });
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
-  variable: '--font-display',
+  variable: '--family-display',
   display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-mono',
+  variable: '--family-mono',
   display: 'swap',
 });
 

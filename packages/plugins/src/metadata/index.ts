@@ -5,8 +5,9 @@
  * Requires sharp as a peer dependency for image metadata.
  */
 
-import { type FluxMediaPlugin, type UploadOptions } from '@fluxmedia/core';
+import { UploadInput, type FluxMediaPlugin, type UploadOptions } from '@fluxmedia/core';
 import crypto from 'crypto';
+import { Readable } from 'stream';
 
 /**
  * Options for the metadata extraction plugin
@@ -57,7 +58,7 @@ export interface ExtractedMetadata {
 /**
  * Check if file is an image
  */
-function isImage(file: File | Buffer): boolean {
+function isImage(file: UploadInput): boolean {
   if (typeof File !== 'undefined' && file instanceof File) {
     return file.type.startsWith('image/');
   }
@@ -67,12 +68,25 @@ function isImage(file: File | Buffer): boolean {
 /**
  * Convert File to Buffer
  */
-async function fileToBuffer(file: File | Buffer): Promise<Buffer> {
+async function fileToBuffer(file: UploadInput): Promise<Buffer> {
+  if (typeof file === 'string') {
+    return Buffer.from(file);
+  }
   if (file instanceof Buffer) {
     return file;
   }
-  const buffer = Buffer.from(await (file as File).arrayBuffer());
-  return buffer;
+  if (file instanceof Readable) {
+    return readStream(file);
+  }
+  throw new Error('Invalid file type'); 
+}
+
+async function readStream(stream: Readable): Promise<Buffer> {
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
 }
 
 /**
@@ -107,9 +121,9 @@ export function createMetadataExtractionPlugin(
     optional: true,
     hooks: {
       async beforeUpload(
-        file: File | Buffer,
+        file: UploadInput,
         uploadOptions: UploadOptions
-      ): Promise<{ file: File | Buffer; options: UploadOptions } | void> {
+      ): Promise<{ file: UploadInput; options: UploadOptions } | void> {
         try {
           const extracted: ExtractedMetadata = {};
 

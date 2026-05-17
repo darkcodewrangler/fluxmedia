@@ -82,8 +82,8 @@ export default function ChangelogPage() {
     <div className="container mx-auto max-w-2xl px-4 py-14 lg:py-20">
       <header className="page-header">
         <p className="page-kicker">release history</p>
-        <h1>Changelog</h1>
-        <p>What shipped, when, and what it means for your upload stack.</p>
+        <h1 className="font-display">Changelog</h1>
+        <p className="page-lede">What shipped, when, and what it means for your upload stack.</p>
       </header>
 
       <div className="content-list">

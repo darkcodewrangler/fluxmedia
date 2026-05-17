@@ -99,7 +99,7 @@
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
   font-size: 0.875em;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--family-mono), ui-monospace, monospace;
   border: 1px solid var(--border);
 }
 
@@ -212,7 +212,7 @@ html.dark .docs-content .shiki span {
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--family-mono), ui-monospace, monospace;
   color: var(--muted-foreground);
   background: transparent;
   border: none;

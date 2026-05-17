@@ -11,6 +11,7 @@ import {
   MediaErrorCode,
   PartialUploadError,
   type PartialUploadContext,
+  UploadInput,
 } from '@fluxmedia/core';
 
 /**
@@ -112,9 +113,9 @@ export function createRetryPlugin(options: RetryOptions = {}): FluxMediaPlugin {
     version: '1.0.0',
     hooks: {
       async beforeUpload(
-        file: File | Buffer,
+        file: UploadInput,
         uploadOptions: UploadOptions
-      ): Promise<{ file: File | Buffer; options: UploadOptions } | void> {
+      ): Promise<{ file: UploadInput; options: UploadOptions } | void> {
         // Store retry configuration in metadata
         const retryMetadata: RetryMetadata = {
           maxRetries: config.maxRetries,

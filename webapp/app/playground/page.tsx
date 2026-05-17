@@ -25,8 +25,10 @@ export default function PlaygroundPage() {
       <header className="page-header mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="page-kicker">interactive</p>
-          <h1>Playground</h1>
-          <p>Run FluxMedia in a live Node environment. Edit providers, plugins, and uploads in place.</p>
+          <h1 className="font-display">Playground</h1>
+          <p className="page-lede">
+            Run FluxMedia in a live Node environment. Edit providers, plugins, and uploads in place.
+          </p>
         </div>
         <div className="flex shrink-0 gap-2">
           <Button variant="outline" size="sm" onClick={handleRetry} className="gap-2">

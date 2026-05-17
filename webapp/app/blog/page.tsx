@@ -10,8 +10,10 @@ export default function BlogPage() {
     <div className="container mx-auto max-w-3xl px-4 py-14 lg:py-20">
       <header className="page-header">
         <p className="page-kicker">engineering notes</p>
-        <h1>Blog</h1>
-        <p>Guides and deep dives on plugins, providers, and the unified upload API.</p>
+        <h1 className="font-display">Blog</h1>
+        <p className="page-lede">
+          Guides and deep dives on plugins, providers, and the unified upload API.
+        </p>
       </header>
 
       {posts.length === 0 ? (

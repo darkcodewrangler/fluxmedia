@@ -10,8 +10,10 @@ import {
     type UploadOptions,
     MediaError,
     MediaErrorCode,
+    UploadInput,
     getFileType,
 } from '@fluxmedia/core';
+import { Readable } from 'stream';
 
 /**
  * Validation error types
@@ -24,7 +26,7 @@ export type ValidationErrorType = 'TYPE' | 'SIZE' | 'EXTENSION' | 'CUSTOM';
 export interface ValidationError {
     type: ValidationErrorType;
     message: string;
-    file: File | Buffer;
+    file: UploadInput;
 }
 
 /**
@@ -42,7 +44,7 @@ export interface FileValidationOptions {
     /** Blocked file extensions (e.g., ['.exe', '.bat']) */
     blockedExtensions?: string[];
     /** Custom validation function */
-    customValidator?: (file: File | Buffer, filename: string) => Promise<boolean> | boolean;
+    customValidator?: (file: UploadInput, filename: string) => Promise<boolean> | boolean;
     /** Callback when validation fails */
     onValidationFailed?: (error: ValidationError) => void;
     /** Use magic byte detection for MIME type (default: true for Buffer, false for File) */
@@ -63,46 +65,46 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * Get file buffer from File or Buffer
+ * Read stream to buffer
  */
-async function getBuffer(file: File | Buffer): Promise<Buffer> {
+async function readStream(stream: Readable): Promise<Buffer> {
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream) {
+        chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+}
+ 
+/**
+ * Get buffer from file
+ */
+async function getBuffer(file: UploadInput): Promise<Buffer> {
+    if (typeof file === 'string') {
+        return Buffer.from(file);
+    }
     if (file instanceof Buffer) {
         return file;
     }
-    const buffer = Buffer.from(await (file as File).arrayBuffer());
-    return buffer;
+    if (file instanceof Readable) {
+        return readStream(file);
+    }
+    throw new Error('Invalid file type');
 }
 
 /**
  * Get file information from File or Buffer
  */
 async function getFileInfo(
-    file: File | Buffer,
+    file: UploadInput,
     options: UploadOptions,
     useMagicBytes: boolean
 ): Promise<{ size: number; name: string; type: string; ext: string }> {
-    const isFile = typeof File !== 'undefined' && file instanceof File;
-
-    const size = isFile ? (file as File).size : (file as Buffer).byteLength;
-    const name = isFile ? (file as File).name : options.filename || 'unknown';
-    let type = isFile ? (file as File).type : '';
-    let ext = name.includes('.') ? name.substring(name.lastIndexOf('.')).toLowerCase() : '';
-
-    // Use magic byte detection for more reliable type checking
-    if (useMagicBytes || file instanceof Buffer) {
-        try {
-            const buffer = await getBuffer(file);
-            const detected = await getFileType(buffer);
-            if (detected) {
-                type = detected.mime;
-                ext = '.' + detected.ext;
-            }
-        } catch {
-            // Fall back to extension/browser type on error
-        }
+    const buffer = await getBuffer(file);
+    const result = await getFileType(buffer);
+    if (!result) {
+        throw new Error('Invalid file type');
     }
-
-    return { size, name, type, ext };
+    return { size: buffer.length, name: file instanceof File ? file.name : options.filename || 'unknown', type: result.mime, ext: result.ext ? '.' + result.ext : '' };
 }
 
 /**
@@ -131,9 +133,9 @@ export function createFileValidationPlugin(
         version: '1.0.0',
         hooks: {
             async beforeUpload(
-                file: File | Buffer,
+                file: UploadInput,
                 uploadOptions: UploadOptions
-            ): Promise<{ file: File | Buffer; options: UploadOptions }> {
+            ): Promise<{ file: UploadInput; options: UploadOptions }> {
                 const { size: fileSize, name: fileName, type: fileType, ext: fileExt } = await getFileInfo(file, uploadOptions, useMagicBytes);
 
                 // Validate max file size

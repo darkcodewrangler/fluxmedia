@@ -40,9 +40,9 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
 
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display), var(--font-sans), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --font-sans: var(--family-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--family-display), var(--family-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--family-mono), ui-monospace, monospace;
 
   --animate-accordion-down: accordion-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-accordion-up: accordion-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -175,7 +175,7 @@
 }
 
 .font-display {
-  font-family: var(--font-display), var(--font-sans), ui-sans-serif, sans-serif;
+  font-family: var(--family-display), var(--family-sans), ui-sans-serif, sans-serif;
 }
 
 /* Spec-sheet grid: structure without card chrome */
@@ -218,7 +218,7 @@
 
 .terminal-body {
   padding: 1rem 1.25rem;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--family-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
   line-height: 1.7;
 }
@@ -238,7 +238,7 @@
 }
 
 .manifest-index {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--family-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -250,7 +250,7 @@
 }
 
 .page-header h1 {
-  font-family: var(--font-display), var(--font-sans), ui-sans-serif, sans-serif;
+  font-family: var(--family-display), var(--family-sans), ui-sans-serif, sans-serif;
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -258,7 +258,7 @@
   color: var(--foreground);
 }
 
-.page-header p {
+.page-header .page-lede {
   margin-top: 0.75rem;
   max-width: 42ch;
   font-size: 1.125rem;
@@ -268,7 +268,7 @@
 
 .page-kicker {
   margin-bottom: 0.75rem;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--family-mono), ui-monospace, monospace;
   font-size: 0.8125rem;
   color: var(--brand);
 }

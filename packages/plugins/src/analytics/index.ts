@@ -4,7 +4,7 @@
  * Provides environment-aware logging and analytics tracking for uploads.
  */
 
-import { type FluxMediaPlugin, type UploadOptions, type UploadResult } from '@fluxmedia/core';
+import { UploadInput, type FluxMediaPlugin, type UploadOptions, type UploadResult } from '@fluxmedia/core';
 
 /**
  * Log level types
@@ -95,11 +95,11 @@ export interface AnalyticsOptions {
   /** Log level (default: 'info') */
   logLevel?: LogLevel;
   /** Callback when upload starts */
-  onUploadStart?: (file: File | Buffer, options: UploadOptions) => void;
+  onUploadStart?: (file: UploadInput, options: UploadOptions) => void;
   /** Callback when upload completes */
   onUploadComplete?: (result: UploadResult, durationMs: number) => void;
   /** Callback when upload fails */
-  onUploadError?: (error: Error, file: File | Buffer) => void;
+  onUploadError?: (error: Error, file: UploadInput) => void;
   /** Callback when file is deleted */
   onDelete?: (id: string) => void;
   /** Generic tracking function with typed events */
@@ -213,9 +213,9 @@ export function createAnalyticsPlugin(options: AnalyticsOptions = {}): FluxMedia
     optional: true,
     hooks: {
       async beforeUpload(
-        file: File | Buffer,
+        file: UploadInput,
         uploadOptions: UploadOptions
-      ): Promise<{ file: File | Buffer; options: UploadOptions } | void> {
+      ): Promise<{ file: UploadInput; options: UploadOptions } | void> {
         const fileName =
           typeof File !== 'undefined' && file instanceof File
             ? file.name
@@ -331,7 +331,7 @@ export function createAnalyticsPlugin(options: AnalyticsOptions = {}): FluxMedia
       async onError(
         error: Error,
         context: {
-          file: File | Buffer;
+          file: UploadInput;
           options: UploadOptions;
           phase: string;
           uploadResult?: UploadResult;
