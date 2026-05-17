@@ -7,7 +7,7 @@
 
 import { UploadInput, type FluxMediaPlugin, type UploadOptions } from '@fluxmedia/core';
 import crypto from 'crypto';
-import { Readable } from 'stream';
+import { fileToBuffer, isImageFile } from '../utils';
 
 /**
  * Options for the metadata extraction plugin
@@ -55,39 +55,7 @@ export interface ExtractedMetadata {
   hashAlgorithm?: string | undefined;
 }
 
-/**
- * Check if file is an image
- */
-function isImage(file: UploadInput): boolean {
-  if (typeof File !== 'undefined' && file instanceof File) {
-    return file.type.startsWith('image/');
-  }
-  return false;
-}
 
-/**
- * Convert File to Buffer
- */
-async function fileToBuffer(file: UploadInput): Promise<Buffer> {
-  if (typeof file === 'string') {
-    return Buffer.from(file);
-  }
-  if (file instanceof Buffer) {
-    return file;
-  }
-  if (file instanceof Readable) {
-    return readStream(file);
-  }
-  throw new Error('Invalid file type'); 
-}
-
-async function readStream(stream: Readable): Promise<Buffer> {
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of stream) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-}
 
 /**
  * Create a metadata extraction plugin
@@ -131,7 +99,7 @@ export function createMetadataExtractionPlugin(
           const buffer = await fileToBuffer(file);
 
           // Extract image metadata if it's an image
-          if (isImage(file) && (config.extractDimensions || config.extractExif)) {
+          if (isImageFile(file) && (config.extractDimensions || config.extractExif)) {
             try {
               const sharp = (await import('sharp')).default;
               const image = sharp(buffer);
