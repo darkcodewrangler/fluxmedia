@@ -1,5 +1,11 @@
 # @fluxmedia/core
 
+## 2.0.1
+
+### Patch Changes
+
+- Extract shared plugin utilities into a common `utils` module; fix `File` (Web API) input handling in validation, metadata, and optimization plugins.
+
 ## 1.0.1
 
 ### Patch Changes
