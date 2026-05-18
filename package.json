@@ -9,7 +9,7 @@
     "url": "https://github.com/codewithveek/fluxmedia.git"
   },
   "license": "MIT",
-  "author": "FluxMedia Contributors",
+  "author": "Victory Lucky <luckyvictory54@gmail.com>",
   "workspaces": [
     "packages/*",
     "examples/*",
