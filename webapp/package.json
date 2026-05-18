@@ -10,15 +10,20 @@
     "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind"
   },
   "dependencies": {
+    "@fluxmedia/cloudinary": "workspace:^",
+    "@fluxmedia/core": "workspace:^",
+    "@fluxmedia/r2": "workspace:^",
+    "@fluxmedia/react": "workspace:^",
+    "@fluxmedia/s3": "workspace:^",
     "@radix-ui/react-slot": "^1.2.4",
     "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.35.0",
+    "framer-motion": "^12.38.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.563.0",
-    "mermaid": "^11.12.3",
-    "next": "16.1.6",
+    "mermaid": "^11.15.0",
+    "next": "16.2.6",
     "next-mdx-remote": "^6.0.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
@@ -27,19 +32,19 @@
     "remark-gfm": "^4.0.1",
     "remark-html": "^16.0.1",
     "shiki": "^3.23.0",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
-    "@types/node": "^20.19.35",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^25.8.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9.39.3",
-    "eslint-config-next": "16.1.6",
-    "pagefind": "^1.4.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.6",
+    "pagefind": "^1.5.2",
     "react-dom": "19.2.3",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "^4.3.0",
     "typescript": "^5.9.3"
   }
 }

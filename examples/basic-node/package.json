@@ -1,22 +1,22 @@
 {
-    "name": "basic-node-example",
-    "version": "2.0.0",
-    "private": true,
-    "type": "module",
-    "description": "Basic Node.js example for FluxMedia - All Providers",
-    "scripts": {
-        "start": "node index.js",
-        "dev": "node --watch index.js"
-    },
-    "dependencies": {
-        "@fluxmedia/core": "latest",
-        "@fluxmedia/cloudinary": "latest",
-        "@fluxmedia/r2": "latest",
-        "@fluxmedia/s3": "latest",
-        "@aws-sdk/client-s3": "^3.980.0",
-        "@aws-sdk/lib-storage": "^3.980.0",
-        "cloudinary": "^2.9.0",
-        "dotenv": "^16.4.1"
-    },
-    "packageManager": "pnpm@9.x"
+  "name": "basic-node-example",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Basic Node.js example for FluxMedia - All Providers",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@fluxmedia/core": "latest",
+    "@fluxmedia/cloudinary": "latest",
+    "@fluxmedia/r2": "latest",
+    "@fluxmedia/s3": "latest",
+    "@aws-sdk/client-s3": "^3.980.0",
+    "@aws-sdk/lib-storage": "^3.980.0",
+    "cloudinary": "^2.9.0",
+    "dotenv": "^16.4.1"
+  },
+  "packageManager": "pnpm@9.15.0"
 }

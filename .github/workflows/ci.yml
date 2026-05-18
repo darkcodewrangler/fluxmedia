@@ -19,8 +19,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 24
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -40,8 +40,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 24
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -67,8 +67,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 24
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -99,20 +99,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "pnpm"
+          node-version: 24
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build all packages
         run: |
-          pnpm --filter @fluxmedia/core build
-          pnpm --filter @fluxmedia/cloudinary build
-          pnpm --filter @fluxmedia/s3 build
-          pnpm --filter @fluxmedia/r2 build
-          pnpm --filter @fluxmedia/react build
-          pnpm --filter @fluxmedia/plugins build
+          pnpm run build
 
       - name: Create Release Pull Request or Publish
         uses: changesets/action@v1

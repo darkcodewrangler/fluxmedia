@@ -1,32 +1,32 @@
 {
-    "name": "nextjs-app-example",
-    "version": "2.0.0",
-    "private": true,
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "lint": "next lint"
-    },
-    "dependencies": {
-        "@aws-sdk/client-s3": "^3.980.0",
-        "@aws-sdk/lib-storage": "^3.980.0",
-        "@aws-sdk/s3-request-presigner": "^3.980.0",
-        "@fluxmedia/cloudinary": "latest",
-        "@fluxmedia/core": "latest",
-        "@fluxmedia/r2": "latest",
-        "@fluxmedia/react": "latest",
-        "@fluxmedia/s3": "latest",
-        "cloudinary": "^2.9.0",
-        "next": "^16.1.6",
-        "react": "^19.2.4"
-    },
-    "devDependencies": {
-        "@types/node": "^22.19.4",
-        "@types/react": "^18.3.1",
-        "@types/react-dom": "^18.3.1",
-        "react-dom": "^19.2.4",
-        "typescript": "^5.3.3"
-    },
-    "packageManager": "pnpm@9.x"
+  "name": "nextjs-app-example",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.980.0",
+    "@aws-sdk/lib-storage": "^3.980.0",
+    "@aws-sdk/s3-request-presigner": "^3.980.0",
+    "@fluxmedia/cloudinary": "latest",
+    "@fluxmedia/core": "latest",
+    "@fluxmedia/r2": "latest",
+    "@fluxmedia/react": "latest",
+    "@fluxmedia/s3": "latest",
+    "cloudinary": "^2.9.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.4",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@9.15.0"
 }
