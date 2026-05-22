@@ -35,6 +35,9 @@ importers:
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.14)(typescript@5.9.3)(yaml@2.9.0)
@@ -86,16 +89,16 @@ importers:
         version: 3.1048.0(@aws-sdk/client-s3@3.1048.0)
       '@fluxmedia/cloudinary':
         specifier: latest
-        version: 2.0.0(cloudinary@2.10.0)
+        version: 2.0.1(cloudinary@2.10.0)
       '@fluxmedia/core':
         specifier: latest
-        version: 2.0.0
+        version: 2.0.1
       '@fluxmedia/r2':
         specifier: latest
-        version: 2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))
+        version: 2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))
       '@fluxmedia/s3':
         specifier: latest
-        version: 2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)
+        version: 2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)
       cloudinary:
         specifier: ^2.9.0
         version: 2.10.0
@@ -116,19 +119,19 @@ importers:
         version: 3.1048.0
       '@fluxmedia/cloudinary':
         specifier: latest
-        version: 2.0.0(cloudinary@2.10.0)
+        version: 2.0.1(cloudinary@2.10.0)
       '@fluxmedia/core':
         specifier: latest
-        version: 2.0.0
+        version: 2.0.1
       '@fluxmedia/r2':
         specifier: latest
-        version: 2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))
+        version: 2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))
       '@fluxmedia/react':
         specifier: latest
-        version: 2.0.0(react@19.2.6)
+        version: 2.0.1(react@19.2.6)
       '@fluxmedia/s3':
         specifier: latest
-        version: 2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)
+        version: 2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)
       cloudinary:
         specifier: ^2.9.0
         version: 2.10.0
@@ -411,6 +414,7 @@ packages:
   '@aws-sdk/core@3.974.11':
     resolution: {integrity: sha512-QpnINq5FZH6EOaDEkmHdT7eUunbvD27pDNQypaWjFyYz7Zl1q3UCMQErBZxpmfGfI7MvI2TlK8KTkgNpv8b1ug==}
     engines: {node: '>=20.0.0'}
+    deprecated: Deprecated due to an error deserialization bug in JSON 1.0 protocol services, see https://github.com/aws/aws-sdk-js-v3/pull/8031. Newer version available.
 
   '@aws-sdk/crc64-nvme@3.972.8':
     resolution: {integrity: sha512-fVfUCL/Xh2zINYMPZvj+iBn6XWouQf0DAnjaWCI9MkmqXzL2Iy5FoQB8O7syFe6gN6AH1ecDDU58T51Ou0kFkA==}
@@ -873,31 +877,31 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@fluxmedia/cloudinary@2.0.0':
-    resolution: {integrity: sha512-J6JVecipBIOnbNOMvtpLV2VKioXimWiQZdqs7+rP5UdMjcV42P4oOEqsrJDOkPVoNTd7+Alxn2OG+J8UvTwkeA==}
+  '@fluxmedia/cloudinary@2.0.1':
+    resolution: {integrity: sha512-IEK5mGm8wknu9ajo/VoYE72qEf7MPSeSCcbNyhIJA2hx1bHlZccKTMNqunN7NMDkNQUKWmtuCXvZ5/tu3/m5qw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       cloudinary: ^2.9.0
 
-  '@fluxmedia/core@2.0.0':
-    resolution: {integrity: sha512-4KMwHszl+KzOUFbBd9kY094PI7oqexW3ygigapNMw0U1nw5S9mXp2iqBjaaCE3bpN/iyr3dJ910KtuuYIoVsrg==}
+  '@fluxmedia/core@2.0.1':
+    resolution: {integrity: sha512-PUTIqIFNbU0ezWvGMiwArwT7LoA/2tKNYUWE+94vcmnhBIWNvWmeUwz3stzCy30RxVeRDFvG01glkJup71Zwuw==}
     engines: {node: '>=20.0.0'}
 
-  '@fluxmedia/r2@2.0.0':
-    resolution: {integrity: sha512-du6jrgUEBj+k7H3D9jziBkGS2NYs/r1IQdbMlZoOM2qH75yjLMuc6Xl0UkL8PyxsVfvYSL0haOW9WCx5FusfXA==}
+  '@fluxmedia/r2@2.0.1':
+    resolution: {integrity: sha512-QcGvEDKvVafZ2/HF8KUp5npfyaWtSlSAVhBUZHoSnyFE8CNsDshgLfxd+uwSgddqMa4IUvxUKpEU3JVAHyLySQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@aws-sdk/client-s3': ^3.0.0
       '@aws-sdk/lib-storage': ^3.0.0
 
-  '@fluxmedia/react@2.0.0':
-    resolution: {integrity: sha512-R5Z01GRRfINRi6uWtwKFgMPExhPoPsoauAQkQr7DZ9EWhJ1m7M/pPbYtK6cBCGw43QkaeSiiJ0POhPEpWDKIbw==}
+  '@fluxmedia/react@2.0.1':
+    resolution: {integrity: sha512-QH5jItlYGTYOG2y0R9zSjsVhFJ9s8cLdbnegZJAlnZA/IdK8obvVk8yU0dfkvwpLbQ1dQnk7LvHkt9YeQPG2NQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18.0.0'
 
-  '@fluxmedia/s3@2.0.0':
-    resolution: {integrity: sha512-WcP8UsCna7x1RRnZL3DQIMJ0FlsQqkF3Cj+EqgWOSf1DjAyDOL4F7lRX8oSNzlZl4iWbidDw6pycadC/0p/1pg==}
+  '@fluxmedia/s3@2.0.1':
+    resolution: {integrity: sha512-djgtkpsKNTqNCudRN6FCDkXdeqkEbixvNQZUjKLcoYUaUhzpac+nb53mCnmiB0YVgNvvHDZzZH2PaVm5gpWl0w==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@aws-sdk/client-s3': ^3.0.0
@@ -3589,6 +3593,7 @@ packages:
 
   dompurify@3.4.4:
     resolution: {integrity: sha512-r8K7KGKEcztXfA/nfabSYB2hg9tDphORJTdf8xprN/luSLGmNhOBN8dm1/SYjqLLet6YUFEXOcrdTuwryp/Bew==}
+    deprecated: Fixed a security issue introduced in 3.4.4
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
@@ -4013,6 +4018,10 @@ packages:
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
+
+  glob@13.0.6:
+    resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
+    engines: {node: 18 || 20 || >=22}
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
@@ -4559,6 +4568,10 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
+  lru-cache@11.5.0:
+    resolution: {integrity: sha512-5YgH9UJd7wVb9hIouI2adWpgqrrICkt070Dnj8EUY1+B4B2P9eRLPAkAAo6NICA7CEhOIeBHl46u9zSNpNu7zA==}
+    engines: {node: 20 || >=22}
+
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
@@ -4793,6 +4806,10 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
+  minipass@7.1.3:
+    resolution: {integrity: sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A==}
+    engines: {node: '>=16 || 14 >=14.17'}
+
   mj-context-menu@0.6.1:
     resolution: {integrity: sha512-7NO5s6n10TIV96d4g2uDpG7ZDpIhMh0QNfGdJw/W47JswFcosz457wqz/b5sAKvl12sxINGFCn80NZHKwxQEXA==}
 
@@ -5004,6 +5021,9 @@ packages:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
 
+  package-json-from-dist@1.0.1:
+    resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
+
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
 
@@ -5054,6 +5074,10 @@ packages:
 
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
+
+  path-scurry@2.0.2:
+    resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
+    engines: {node: 18 || 20 || >=22}
 
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
@@ -5369,6 +5393,11 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
+
+  rimraf@6.1.3:
+    resolution: {integrity: sha512-LKg+Cr2ZF61fkcaK1UdkH2yEBBKnYjTyWzTJT6KNPcSPaiT7HSdhtMXQuN5wkTX0Xu72KQ1l8S42rlmexS2hSA==}
+    engines: {node: 20 || >=22}
+    hasBin: true
 
   robust-predicates@3.0.3:
     resolution: {integrity: sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA==}
@@ -6770,40 +6799,40 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fluxmedia/cloudinary@2.0.0(cloudinary@2.10.0)':
+  '@fluxmedia/cloudinary@2.0.1(cloudinary@2.10.0)':
     dependencies:
-      '@fluxmedia/core': 2.0.0
+      '@fluxmedia/core': 2.0.1
       cloudinary: 2.10.0
     transitivePeerDependencies:
       - supports-color
 
-  '@fluxmedia/core@2.0.0':
+  '@fluxmedia/core@2.0.1':
     dependencies:
       file-type: 21.3.4
       load-esm: 1.0.3
     transitivePeerDependencies:
       - supports-color
 
-  '@fluxmedia/r2@2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))':
+  '@fluxmedia/r2@2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))':
     dependencies:
       '@aws-sdk/client-s3': 3.1048.0
       '@aws-sdk/lib-storage': 3.1048.0(@aws-sdk/client-s3@3.1048.0)
-      '@fluxmedia/core': 2.0.0
+      '@fluxmedia/core': 2.0.1
     transitivePeerDependencies:
       - supports-color
 
-  '@fluxmedia/react@2.0.0(react@19.2.6)':
+  '@fluxmedia/react@2.0.1(react@19.2.6)':
     dependencies:
-      '@fluxmedia/core': 2.0.0
+      '@fluxmedia/core': 2.0.1
       react: 19.2.6
     transitivePeerDependencies:
       - supports-color
 
-  '@fluxmedia/s3@2.0.0(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)':
+  '@fluxmedia/s3@2.0.1(@aws-sdk/client-s3@3.1048.0)(@aws-sdk/lib-storage@3.1048.0(@aws-sdk/client-s3@3.1048.0))(@aws-sdk/s3-request-presigner@3.1048.0)':
     dependencies:
       '@aws-sdk/client-s3': 3.1048.0
       '@aws-sdk/lib-storage': 3.1048.0(@aws-sdk/client-s3@3.1048.0)
-      '@fluxmedia/core': 2.0.0
+      '@fluxmedia/core': 2.0.1
     optionalDependencies:
       '@aws-sdk/s3-request-presigner': 3.1048.0
     transitivePeerDependencies:
@@ -9583,7 +9612,7 @@ snapshots:
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-hooks: 7.1.1(eslint@9.39.4(jiti@2.7.0))
@@ -9620,7 +9649,7 @@ snapshots:
       tinyglobby: 0.2.16
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -9635,7 +9664,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -10025,6 +10054,12 @@ snapshots:
   glob-parent@6.0.2:
     dependencies:
       is-glob: 4.0.3
+
+  glob@13.0.6:
+    dependencies:
+      minimatch: 10.2.5
+      minipass: 7.1.3
+      path-scurry: 2.0.2
 
   globals@14.0.0: {}
 
@@ -10606,6 +10641,8 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
+  lru-cache@11.5.0: {}
+
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
@@ -11157,6 +11194,8 @@ snapshots:
 
   minimist@1.2.8: {}
 
+  minipass@7.1.3: {}
+
   mj-context-menu@0.6.1: {}
 
   mlly@1.8.2:
@@ -11446,6 +11485,8 @@ snapshots:
 
   p-try@2.2.0: {}
 
+  package-json-from-dist@1.0.1: {}
+
   package-manager-detector@0.2.11:
     dependencies:
       quansync: 0.2.11
@@ -11504,6 +11545,11 @@ snapshots:
   path-key@4.0.0: {}
 
   path-parse@1.0.7: {}
+
+  path-scurry@2.0.2:
+    dependencies:
+      lru-cache: 11.5.0
+      minipass: 7.1.3
 
   path-type@4.0.0: {}
 
@@ -11964,6 +12010,11 @@ snapshots:
       unified: 11.0.5
 
   reusify@1.1.0: {}
+
+  rimraf@6.1.3:
+    dependencies:
+      glob: 13.0.6
+      package-json-from-dist: 1.0.1
 
   robust-predicates@3.0.3: {}
 

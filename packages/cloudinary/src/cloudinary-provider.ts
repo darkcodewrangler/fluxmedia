@@ -28,6 +28,11 @@ async function getCloudinarySDK() {
 }
 
 /**
+ * Internal config type with all defaults applied
+ */
+type ResolvedCloudinaryConfig = Required<CloudinaryConfig>;
+
+/**
  * Cloudinary provider implementation.
  * Provides full-featured media upload with transformations, AI tagging, and more.
  */
@@ -37,7 +42,7 @@ export class CloudinaryProvider implements MediaProvider {
 
   private client: CloudinaryClient | null = null;
   private clientPromise: Promise<CloudinaryClient> | null = null;
-  private config!: CloudinaryConfig;
+  private config!: ResolvedCloudinaryConfig;
 
   constructor(config: CloudinaryConfig) {
     // Issue #2: Validate required configuration fields

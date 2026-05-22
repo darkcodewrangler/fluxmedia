@@ -454,11 +454,6 @@ export class R2Provider implements MediaProvider {
     return map[mime] ?? mime.split('/').pop() ?? '';
   }
 
-  private extractFormat(key: string): string {
-    const parts = key.split('.');
-    return parts.length > 1 ? (parts[parts.length - 1] ?? '') : '';
-  }
-
   private createResult(
     key: string,
     size: number,

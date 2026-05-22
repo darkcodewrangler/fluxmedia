@@ -5,12 +5,15 @@
     "lib": ["ES2020"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     // Emit
     "declaration": true,
     "declarationMap": false,
     "sourceMap": true,
     "removeComments": false,
     "importHelpers": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
     // Interop Constraints
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -26,16 +29,17 @@
     "exactOptionalPropertyTypes": true,
     // Completeness
     "skipLibCheck": true,
-    // Path Aliases
-    "rootDir": ".",
-    "paths": {
-      "@fluxmedia/core": ["./packages/core/src"],
-      "@fluxmedia/cloudinary": ["./packages/cloudinary/src"],
-      "@fluxmedia/s3": ["./packages/s3/src"],
-      "@fluxmedia/r2": ["./packages/r2/src"],
-      "@fluxmedia/react": ["./packages/react/src"],
-      "@fluxmedia/plugins": ["./packages/plugins/src"]
-    }
+    // No path aliases - use actual node_modules resolution
+
+    "paths": {}
   },
-  "exclude": ["node_modules", "dist", "build", "coverage"]
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "../../packages/*/src"
+  ]
 }
