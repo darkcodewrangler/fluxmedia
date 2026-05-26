@@ -1,6 +1,6 @@
 {
   "name": "@fluxmedia/plugins",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Official plugins for FluxMedia - extend your unified media upload pipeline",
   "keywords": [
     "fluxmedia",
