@@ -1,6 +1,6 @@
 {
   "name": "@fluxmedia/s3",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "AWS S3 provider for FluxMedia - unified media upload library",
   "keywords": [
     "fluxmedia",
