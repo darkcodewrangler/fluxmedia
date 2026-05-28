@@ -119,6 +119,7 @@ jobs:
       - name: Create Release Pull Request or Publish
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish --provenance # triggers OIDC attestation
+          publish: pnpm changeset publish --tag provenance # triggers OIDC attestation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
