@@ -90,6 +90,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, build, test]
     if: github.ref == 'refs/heads/main'
+
+    # Required for OIDC provenance + changesets PR creation
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # ← unlocks OIDC token for npm provenance
+
     steps:
       - uses: actions/checkout@v4
 
@@ -101,18 +108,17 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org' # required for NODE_AUTH_TOKEN to work
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build all packages
-        run: |
-          pnpm run build
+        run: pnpm run build
 
       - name: Create Release Pull Request or Publish
         uses: changesets/action@v1
         with:
-          publish: pnpm changeset publish
+          publish: pnpm changeset publish --provenance # triggers OIDC attestation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
