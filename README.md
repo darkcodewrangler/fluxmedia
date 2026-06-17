@@ -8,6 +8,19 @@
 
 A unified, TypeScript-first media library for modern applications. Upload to Cloudinary, S3, R2, and more with a single interface.
 
+## Overview
+
+FluxMedia is a **monorepo** that provides a single, consistent API for media uploads across multiple cloud storage and CDN providers. Instead of writing provider-specific integration code for Cloudinary, AWS S3, or Cloudflare R2, you configure one `MediaUploader` instance and your upload logic stays the same no matter which backend you use.
+
+The monorepo is organized into focused packages:
+
+- **`@fluxmedia/core`** – the provider-agnostic `MediaUploader` class, shared TypeScript types, error codes, file-type detection utilities, and the plugin interface.
+- **`@fluxmedia/cloudinary`**, **`@fluxmedia/s3`**, **`@fluxmedia/r2`** – thin provider adapters that translate the unified API into provider-specific SDK calls.
+- **`@fluxmedia/plugins`** – optional, composable plugins (validation, image optimization, metadata extraction, analytics, retry).
+- **`@fluxmedia/react`** – React hooks (`useMediaUpload`) and ready-to-use components built on top of the core library.
+
+Typical use cases include profile-picture uploads, document management, video hosting pipelines, and any scenario where you need reliable, type-safe file uploads without locking yourself into a single cloud provider.
+
 ## Features
 
 - **Unified API** - Write once, use any provider
